@@ -12,3 +12,7 @@ $env:Path = "$(Join-Path $jdkCandidate 'bin');$env:Path"
 $env:GRADLE_USER_HOME = Join-Path $script:WorkspaceRoot '.cache\gradle'
 $env:WORKSPACE_PLATFORM_ROOT = $script:WorkspaceRoot
 $env:WORKSPACE_DATA_DIR = (Join-Path $script:WorkspaceRoot 'data').Replace('\', '/')
+if (-not $env:WORKSPACE_CODEX_EXECUTABLE) {
+    $codexCommand = Get-Command codex.exe -ErrorAction SilentlyContinue
+    if ($codexCommand) { $env:WORKSPACE_CODEX_EXECUTABLE = $codexCommand.Source }
+}

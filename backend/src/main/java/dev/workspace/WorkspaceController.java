@@ -18,16 +18,23 @@ public class WorkspaceController {
     private final ActivityRepository activity;
     private final WorkspaceFiles files;
     private final GitInspector git;
-    public WorkspaceController(ProjectRepository projects, TaskRepository tasks, ActivityRepository activity, WorkspaceFiles files, GitInspector git) {
+    private final CodexPlanner codex;
+    private final PlanContext context;
+    private final PlanAttemptRepository attempts;
+    public WorkspaceController(ProjectRepository projects, TaskRepository tasks, ActivityRepository activity, WorkspaceFiles files, GitInspector git, CodexPlanner codex, PlanContext context, PlanAttemptRepository attempts) {
         this.projects = projects; this.tasks = tasks; this.activity = activity; this.files = files; this.git = git;
+        this.codex = codex; this.context = context; this.attempts = attempts;
     }
     public record ProjectInput(@NotBlank @Size(max=100) String name, @NotBlank @Size(max=2048) String directory, @Size(max=8000) String instructions) {}
     public record SettingsInput(@NotBlank @Size(max=100) String name, @Size(max=8000) String instructions) {}
     public record TaskInput(@NotNull UUID projectId, @NotBlank @Size(max=12000) String instruction) {}
+    public record ContextInput(@Size(max=8) List<@NotBlank @Size(max=2048) String> files) {}
+    public record PlanInput(@Size(max=8) List<@NotBlank @Size(max=2048) String> files, @NotBlank @Size(max=64) String contextHash) {}
 
     @GetMapping("/health") public Map<String, Object> health() {
-        return Map.of("status", "UP", "application", "AI Developer Workspace", "time", Instant.now(), "aiConfigured", false, "executionEnabled", false);
+        return Map.of("status", "UP", "application", "AI Developer Workspace", "time", Instant.now(), "aiProvider", "codex", "aiConfigured", codex.snapshot().authenticated(), "executionEnabled", false);
     }
+    @GetMapping("/ai/status") public CodexPlanner.ConnectionStatus aiStatus() { return codex.status(); }
     @GetMapping("/projects") public List<Project> projects() { return projects.findAllByOrderByCreatedAtDesc(); }
     @GetMapping("/projects/{id}") public Project project(@PathVariable UUID id) {
         return projects.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found."));
@@ -63,16 +70,20 @@ public class WorkspaceController {
     public Task createTask(@Valid @RequestBody TaskInput input) {
         project(input.projectId());
         Task task = tasks.save(new Task(input.projectId(), input.instruction().strip()));
-        activity.save(new Activity(task.projectId, task.id, "Task saved as draft; AI provider is not configured"));
+        activity.save(new Activity(task.projectId, task.id, "Task saved as draft"));
         return task;
     }
-    @PostMapping("/tasks/{id}/cancel") @Transactional
-    public Task cancel(@PathVariable UUID id) {
-        Task task = tasks.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found."));
-        if (!task.status.equals("DRAFT")) throw new ResponseStatusException(HttpStatus.CONFLICT, "Only draft tasks can be cancelled.");
-        task.status = "CANCELLED"; task.updatedAt = Instant.now();
-        activity.save(new Activity(task.projectId, task.id, "Draft task cancelled"));
-        return tasks.save(task);
+    @PostMapping("/tasks/{id}/cancel") public Task cancel(@PathVariable UUID id) { return codex.cancel(id); }
+    @GetMapping("/tasks/{id}") public Task task(@PathVariable UUID id) {
+        return tasks.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found."));
+    }
+    @PostMapping("/tasks/{id}/context") public PlanContext.Preview context(@PathVariable UUID id, @Valid @RequestBody ContextInput input) {
+        Task task = task(id); return context.preview(project(task.projectId), task, input.files());
+    }
+    @PostMapping("/tasks/{id}/plan") @ResponseStatus(HttpStatus.ACCEPTED)
+    public PlanAttempt plan(@PathVariable UUID id, @Valid @RequestBody PlanInput input) { return codex.start(id, input.files(), input.contextHash()); }
+    @GetMapping("/tasks/{id}/attempts") public List<PlanAttempt> attempts(@PathVariable UUID id) {
+        task(id); return attempts.findByTaskIdOrderByStartedAtDesc(id);
     }
     @GetMapping("/activity") public List<Activity> activity(@RequestParam(required=false) UUID projectId) {
         if (projectId != null) { project(projectId); return activity.findTop50ByProjectIdOrderByCreatedAtDesc(projectId); }

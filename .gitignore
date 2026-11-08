@@ -1,5 +1,6 @@
 /.cache/
 /.runtime/
+/.transfer/
 /data/
 /backend/data/
 **/node_modules/

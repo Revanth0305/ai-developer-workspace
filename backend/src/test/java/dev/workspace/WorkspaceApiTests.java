@@ -14,6 +14,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+    "workspace.codex.enabled=false",
     "spring.datasource.url=jdbc:h2:mem:workspace-api-tests;DB_CLOSE_DELAY=-1",
     "spring.jpa.hibernate.ddl-auto=create-drop"
 })

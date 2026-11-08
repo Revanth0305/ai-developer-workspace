@@ -7,7 +7,7 @@ Updated: 2026-11-08 (Asia/Calcutta)
 | CP1: Foundation | Complete | React/TypeScript production build; Spring Boot executable JAR; live /api/health through the frontend proxy |
 | CP2: Dashboard | Complete | Browser-verified registration, project details, source preview, saved draft, settings, history and cancellation |
 | CP3: Project management | Complete for read-only scope | Two-project isolation API test; canonical folder checks; overlap/platform/traversal rejection; scoped Git inspection |
-| CP4: AI planning | Pending user provider selection | User explicitly chose to decide later; no AI requests are made |
+| CP4: AI planning | Codex selected; backend partially implemented | Latest build/regression tests pass; frontend wiring and live Codex verification are pending. Work paused for user changes and Windows migration. |
 | CP5: Code execution | Not started | Requires isolated executor and a selected provider |
 | CP6: Managed-project Git automation | Not started | Current Git integration is inspection only |
 | CP7: Deployment | Not started | Local application only; no hosting target configured |
@@ -38,4 +38,4 @@ Updated: 2026-11-08 (Asia/Calcutta)
 
 ## Next requirement
 
-Choose an AI provider when ready. Then configure its credentials locally on the backend, agree the initial model/budget, implement context review and the provider adapter, and verify one real project-specific plan before introducing execution.
+Restore on the destination Windows computer and read MIGRATION_HANDOFF.md. The user selected signed-in Codex rather than a separate API-key provider. Wait for the user's changes before continuing the unfinished integration. Ask which Git hosting account and repository to use before any external connection or push.
