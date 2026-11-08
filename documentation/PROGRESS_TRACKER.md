@@ -7,13 +7,13 @@ Updated: 2026-11-08 (Asia/Calcutta)
 | CP1: Foundation | Complete | React/TypeScript production build; Spring Boot executable JAR; live /api/health through the frontend proxy |
 | CP2: Dashboard | Complete | Browser-verified registration, project details, source preview, saved draft, settings, history and cancellation |
 | CP3: Project management | Complete for read-only scope | Two-project isolation API test; canonical folder checks; overlap/platform/traversal rejection; scoped Git inspection |
-| CP4: AI planning | Codex selected; backend partially implemented | Latest build/regression tests pass; frontend wiring and live Codex verification are pending. Work paused for user changes and Windows migration. |
-| CP5: Code execution | Not started | Requires isolated executor and a selected provider |
+| CP4: AI planning | Complete; awaiting user review | Reviewed context → live signed-in Codex → validated, stored project plan. 27 tests pass, including installed-binary compatibility. Live cancellation verified. |
+| CP5: Code execution | Not started; awaiting CP4 review | Requires an isolated executor, reviewed diffs, bounded commands and recovery |
 | CP6: Managed-project Git automation | Not started | Current Git integration is inspection only |
 | CP7: Deployment | Not started | Local application only; no hosting target configured |
 | CP8: Autonomous workflow | Not started | Requires earlier execution and recovery milestones |
 
-## Verified
+## Historical CP1–3 verification
 
 - Node.js 24.14.1, npm 11.11.0, Git 2.53.0 and Temurin JDK 21.0.13.
 - React 19.3.1, Vite 8.3.6, TypeScript 7.0.2; dependencies locked in package-lock.json.
@@ -32,13 +32,13 @@ Updated: 2026-11-08 (Asia/Calcutta)
 
 - Project creation means registration of an existing folder. Managed application scaffolding is a later capability.
 - Source inspection is read-only and bounded; filename exclusions are not a complete secret scanner.
-- No AI planning, file editing, arbitrary command runner, automatic retries, Git commit/push, or deployment is presented as available.
+- AI planning is read-only and opt-in. No managed-project editing, command runner, automatic retries, Git commit/push or deployment is available.
 - This local prototype is not configured for remote access or multiple users.
 - Database migrations and background execution-attempt records are deferred until the next applicable milestone.
 
 ## Next requirement
 
-Restore on the destination Windows computer and read MIGRATION_HANDOFF.md. The user selected signed-in Codex rather than a separate API-key provider. Wait for the user's changes before continuing the unfinished integration. Ask which Git hosting account and repository to use before any external connection or push.
+CP4 is the current review checkpoint. Report the milestone and wait for the user to review and authorize CP5. The user also requests stopping work when the remaining Codex usage quota reaches 10%. The selected platform repository is the public GitHub repository Revanth0305/ai-developer-workspace; do not change the account or repository without asking.
 
 
 ## Destination review and Jarvis UI — 2026-11-08
@@ -52,3 +52,20 @@ Restore on the destination Windows computer and read MIGRATION_HANDOFF.md. The u
 - Lint could not run: Windows Application Control blocked oxlint's native binding. No policy bypass was attempted for that block.
 - Browser verification uses a separate ignored .runtime/ui-verification-data database and a disposable external review folder. Codex remains explicitly disabled. Desktop and 390px mobile layouts checked; no horizontal document overflow. Verified project registration, instruction starter, saved draft/history, settings status and actual source preview.
 - User selected a public GitHub repository: Revanth0305/ai-developer-workspace. Public repository created and initial history/source push completed on codex/workspace-foundation; UI checkpoint a0faeea. GitHub CLI authentication confirmed the selected Revanth0305 account. Local data, caches and credentials are excluded from Git.
+
+
+## CP4: reviewed Codex planning — destination, 2026-11-08
+
+- Implemented connection checks, explicit source selection, exact redacted-context review, confirmation, asynchronous planning, stored results/attempts, task states, polling, cancellation and retry via a new reviewed request. Results show proposed paths/changes, verification steps and open questions as plain text.
+- The fingerprint binds review to raw instruction/settings/source contents and the path listing. A redacted-value change still invalidates review. Bounds, excluded paths, common credential redaction and proposed-path containment are tested. Redaction remains heuristic and requires user inspection.
+- Fixed worker-slot cleanup after connection creation errors, cancellation before connection creation, late-result races, queue concurrency and interrupted-attempt recovery. State transitions commit before the worker starts. Cancellation retains the active slot until its owned child process is cleaned up.
+- Replaced unverified config assumptions with installed-protocol checks. Integration entries retain required transport fields and remove null config values before being disabled; inherited app/plugin/MCP capabilities and command/browser/image/delegation/hook features are disabled. Threads are ephemeral, read-only, network-disabled and never approve operations; inherited instruction sources must be empty. Unexpected tool activity fails the request.
+- Installed Codex App Server 0.167.0-alpha.3.2, local ChatGPT sign-in: real browser request on a disposable TypeScript greeting project returned a stored project-specific plan. The result preserved the greeting export, proposed blank-name validation and identified missing test-runner/error-type choices. No proposed checks were represented as executed.
+- Final validation: frontend type checking/production build, backend executable JAR and **27 tests**, zero failures/errors/skips in the destination run. Includes 8 planner lifecycle tests, 6 context/plan tests, 5 stdio protocol tests, 1 installed-binary compatibility test and the original 7 regression tests.
+- The optional compatibility test uses a synthetic local Responses provider with authentication disabled. It verifies omitted/empty model tools and absence of an Authorization header; no real model request is made by that test. Run it by setting WORKSPACE_CODEX_TEST_EXECUTABLE before Build-Workspace.ps1. Without that variable only this installed-binary test is skipped.
+- Live browser cancellation retained CANCELLED task/attempt states. Before/after SHA-256 comparison found exactly the same two fixture files and zero content differences. The original transferred data directory is untouched; live checks use .runtime/cp4-verification-data.
+- Windows lint remains blocked by Application Control. No security policy was weakened. The Java long-temp-path workaround is process-scoped as documented in ENVIRONMENT_CHECK.md.
+- Verification images and generated protocol schemas are ignored local artifacts under .runtime/. Provider context/results and authentication files are not published to Git.
+- Stop here for user review. CP5–8 remain unimplemented; publication of the platform source does not constitute CP6 managed-project Git automation.
+
+- Restart verification: after stopping and restarting the final backend against the same verification database, browser history retained both the PLANNED result and CANCELLED task. Reopening the planned instruction displayed its original stored result. At 390px, both document and planning-dialog widths stayed within the viewport with no horizontal overflow.

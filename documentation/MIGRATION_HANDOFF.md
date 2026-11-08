@@ -2,6 +2,8 @@
 
 Prepared: 2026-11-08 (Asia/Calcutta).
 
+Historical transfer record: the unfinished-integration notes below describe the source computer at packaging time. Destination CP4 work supersedes those notes; see the current PROGRESS_TRACKER.md and PROJECT_SPEC.md.
+
 ## User intent
 
 Move this complete project to another Windows computer where the user is already signed into the same Codex account. Continue development there after the user provides their requested changes. The user wants Codex itself as the AI engine and eventually wants to issue internal commands through this dashboard.

@@ -76,6 +76,23 @@ public class WorkspaceFiles {
         } catch (InvalidPathException | IOException e) { throw bad("Unable to read this source file."); }
     }
 
+    /** Validate a model-proposed path without creating or changing anything. */
+    public String proposedPath(String directory, String value) {
+        try {
+            if (value == null || value.isBlank() || value.length() > 2048 || value.contains(":")) throw bad("Invalid proposed path.");
+            String portable = value.replace('\\', '/');
+            Path path = Path.of(portable);
+            if (path.isAbsolute() || !allowed(path)) throw bad("Proposed paths must be relative source paths inside the project.");
+            Path root = registerDirectory(directory);
+            Path candidate = root.resolve(path).normalize();
+            if (!candidate.startsWith(root)) throw bad("Proposed path escapes the project.");
+            for (Path parent = candidate; parent != null && parent.startsWith(root); parent = parent.getParent()) {
+                if (Files.exists(parent, LinkOption.NOFOLLOW_LINKS) && !parent.toRealPath().startsWith(root)) throw bad("Proposed path escapes the project.");
+            }
+            return path.normalize().toString().replace('\\', '/');
+        } catch (InvalidPathException | IOException e) { throw bad("Invalid proposed source path."); }
+    }
+
     private boolean blocked(String name) { return name.startsWith(".") || EXCLUDED.contains(name.toLowerCase(Locale.ROOT)); }
     private boolean allowed(Path relative) {
         for (Path part : relative) if (blocked(part.toString()) || part.toString().equals("..")) return false;

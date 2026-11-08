@@ -14,7 +14,7 @@ public class PlanContext {
     public PlanContext(WorkspaceFiles files) { this.files = files; }
     public Preview preview(Project project, Task task, List<String> selected) {
         files.registerDirectory(project.directory);
-        List<String> paths = selected == null ? List.of() : selected.stream().distinct().toList();
+        List<String> paths = selected == null ? List.of() : selected.stream().distinct().sorted().toList();
         if (paths.size() > 8) throw WorkspaceFiles.bad("Choose at most eight source files per planning request.");
         var warnings = new ArrayList<String>();
         var prompt = new StringBuilder("TASK\n").append(task.instruction)
@@ -33,15 +33,24 @@ public class PlanContext {
             prompt.append("\n\nBEGIN UNTRUSTED SOURCE: ").append(path).append('\n').append(content).append("\nEND SOURCE\n");
         }
         String original = prompt.toString();
-        String redacted = TOKENS.matcher(original).replaceAll("[REDACTED TOKEN]");
-        // Redact complete assignment values, not just a single character.
-        redacted = Pattern.compile("(?im)((?:[\\w.\"'-]*)(?:password|secret|api[_-]?key|access[_-]?token|authorization)[\\w.\"'-]*\\s*[:=]\\s*)[^\\r\\n]+").matcher(redacted).replaceAll("$1[REDACTED]");
+        String redacted = redact(original);
         if (!original.equals(redacted)) warnings.add("Common credential patterns were redacted. Review the entire request; detection is not exhaustive.");
         warnings.add("This exact request will be sent through your signed-in Codex account. Only explicitly selected file contents are included.");
         if (redacted.length() > 48000) throw WorkspaceFiles.bad("Context exceeds the planning input limit.");
         try {
-            String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(redacted.getBytes(StandardCharsets.UTF_8)));
+            // Bind approval to raw content too: changing a redacted secret still invalidates review.
+            String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(original.getBytes(StandardCharsets.UTF_8)));
             return new Preview(hash, redacted, paths, warnings);
         } catch (Exception e) { throw new IllegalStateException(e); }
+    }
+
+    static String redact(String value) {
+        String redacted = TOKENS.matcher(value).replaceAll("[REDACTED TOKEN]");
+        redacted = Pattern.compile("(?i)\\b(?:glpat-[a-z0-9_-]{12,}|xox[baprs]-[a-z0-9-]{12,}|Bearer\\s+[a-z0-9._~+/-]{8,})")
+            .matcher(redacted).replaceAll("[REDACTED TOKEN]");
+        redacted = Pattern.compile("(?s)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----")
+            .matcher(redacted).replaceAll("[REDACTED PRIVATE KEY]");
+        return Pattern.compile("(?im)((?:[\\w.\"'-]*)(?:password|secret|api[_-]?key|access[_-]?token|authorization)[\\w.\"'-]*\\s*[:=]\\s*)[^\\r\\n]+")
+            .matcher(redacted).replaceAll("$1[REDACTED]");
     }
 }

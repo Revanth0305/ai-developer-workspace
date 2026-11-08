@@ -14,8 +14,14 @@ type Task = {
   id: string;
   projectId: string;
   instruction: string;
-  status: "DRAFT" | "CANCELLED";
+  status: "DRAFT" | "PLANNING" | "PLANNED" | "FAILED" | "CANCELLED";
   createdAt: string;
+};
+type AiConnection = { enabled: boolean; authenticated: boolean; authMode: string; message: string };
+type ContextPreview = { hash: string; prompt: string; selectedFiles: string[]; warnings: string[] };
+type PlanAttempt = { id: string; status: string; contextPreview: string; result: string; error: string; startedAt: string; finishedAt: string | null };
+const taskLabels: Record<Task["status"], string> = {
+  DRAFT: "Draft", PLANNING: "Planning", PLANNED: "Plan ready", FAILED: "Failed", CANCELLED: "Cancelled",
 };
 type Activity = { id: string; message: string; createdAt: string };
 type GitStatus = {
@@ -128,6 +134,7 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
 }
 
 function App() {
+  const [aiConnection, setAiConnection] = useState<AiConnection | null>(null);
   const [view, setView] = useState<View>(viewFromHash);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [selectedId, setSelectedId] = useState(
@@ -199,15 +206,16 @@ function App() {
     if (!selected || saving) return;
     setSaving(true);
     try {
-      await api<Task>("/tasks", {
+      const saved = await api<Task>("/tasks", {
         method: "POST",
         body: JSON.stringify({ projectId: selected.id, instruction }),
       });
       setInstruction("");
       setNotice(
-        "Task saved. It will remain a draft until AI integration is configured.",
+        "Draft saved. Review its context before sending a planning request.",
       );
       await refresh();
+      setActiveTask(saved);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -330,7 +338,7 @@ function App() {
             </div>
           </div>
           <span className="version">
-            FOUNDATION BUILD <span>v0.1</span>
+            PLANNING BUILD <span>v0.3</span>
           </span>
         </div>
       </aside>
@@ -433,7 +441,7 @@ function App() {
                       icon="shield"
                       label="Execution mode"
                       value="Read only"
-                      detail="Codex integration in progress"
+                      detail={aiConnection?.authenticated ? "Codex planning connected" : "Codex planning not connected"}
                     />
                   </section>
                   <div className="work-grid">
@@ -555,10 +563,10 @@ function App() {
                           <Icon name="spark" size={17} />
                           <p>
                             <strong>
-                              AI integration is the next milestone.
+                              Review first. Plan second.
                             </strong>{" "}
-                            Codex is selected. Planning integration is unfinished. Drafts are saved;
-                            code execution is not enabled.
+                            Save a draft, then open it to choose source files and review
+                            the exact context sent to Codex. Planning never edits your project.
                           </p>
                         </div>
                       </section>
@@ -571,16 +579,11 @@ function App() {
                       )}
                     </div>
                     <div className="work-aside">
-                      <section className="panel assistant-core">
-                        <div className="panel-heading"><h2>Workspace core</h2><Icon name="spark" size={18} /></div>
-                        <div className="core-visual" aria-hidden="true"><span className="core-orb" /></div>
-                        <p className="core-status">PLANNING IN DEVELOPMENT</p>
-                        <p className="core-description">Codex selected. Save instructions locally while integration is completed.</p>
-                      </section>
+                      <CodexStatus onChange={setAiConnection} />
                       <section className="panel">
                         <div className="panel-heading">
                           <h2>Development journey</h2>
-                          <span className="badge neutral">3 / 8</span>
+                          <span className="badge neutral">4 / 8</span>
                         </div>
                         <ol className="journey">
                           {[
@@ -596,11 +599,11 @@ function App() {
                             <li
                               key={label}
                               className={
-                                index < 3 ? "done" : index === 3 ? "next" : ""
+                                index < 4 ? "done" : index === 4 ? "next" : ""
                               }
                             >
                               <span className="journey-step">
-                                {index < 3 ? (
+                                {index < 4 ? (
                                   <Icon name="check" size={13} />
                                 ) : (
                                   index + 1
@@ -608,11 +611,11 @@ function App() {
                               </span>
                               <span>
                                 {label}
-                                {index === 3 && (
-                                  <small>Codex integration in progress</small>
+                                {index === 4 && (
+                                  <small>Awaiting your milestone review</small>
                                 )}
                               </span>
-                              {index === 3 && (
+                              {index === 4 && (
                                 <span className="next-label">NEXT</span>
                               )}
                             </li>
@@ -800,7 +803,7 @@ function App() {
                     {[
                       ["Local persistence", "Enabled"],
                       ["Git & source inspection", "Read only"],
-                      ["AI provider", "Codex · integration pending"],
+                      ["AI provider", aiConnection?.authenticated ? "Codex · connected" : "Codex · not connected"],
                       ["Code execution", "Not enabled"],
                       ["Push & deployment", "Not enabled"],
                     ].map(([label, value], index) => (
@@ -815,8 +818,8 @@ function App() {
                     ))}
                     <p className="settings-note">
                       The service listens on your computer's loopback address.
-                      Codex will use local sign-in once the unfinished integration
-                      is validated. No credentials are stored in this dashboard.
+                      Codex uses your local sign-in. Review each request before sending
+                      it. Code execution, push and deployment are separate milestones.
                     </p>
                   </section>
                 </div>
@@ -845,7 +848,7 @@ function App() {
         />
       )}
       {activeTask && (
-        <Modal title="Instruction details" onClose={() => setActiveTask(null)}>
+        <Modal title="Instruction & plan" onClose={() => setActiveTask(null)}>
           <div className="task-detail-meta">
             <span
               className={`badge ${activeTask.status === "DRAFT" ? "purple" : "neutral"}`}
@@ -860,18 +863,19 @@ function App() {
             )?.name || "Project"}
           </h3>
           <pre className="task-instruction">{activeTask.instruction}</pre>
-          <p className="muted">
-            {activeTask.status === "DRAFT"
-              ? "This instruction is stored locally. No AI request or code execution has taken place."
-              : "This draft was cancelled. It remains in history for reference."}
-          </p>
-          {activeTask.status === "DRAFT" && (
+          <PlanningPanel
+            key={activeTask.id}
+            task={activeTask}
+            project={snapshot?.projects.find((project) => project.id === activeTask.projectId)}
+            onUpdate={(task) => { setActiveTask(task); void refresh(); }}
+          />
+          {(activeTask.status === "DRAFT" || activeTask.status === "PLANNING") && (
             <button
               className="button secondary"
               disabled={saving}
               onClick={() => void cancelTask(activeTask)}
             >
-              {saving ? "Cancelling…" : "Cancel draft"}
+              {saving ? "Cancelling…" : activeTask.status === "PLANNING" ? "Cancel planning" : "Cancel draft"}
             </button>
           )}
         </Modal>
@@ -879,6 +883,163 @@ function App() {
     </div>
   );
 }
+function CodexStatus({ onChange }: { onChange: (status: AiConnection) => void }) {
+  const [connection, setConnection] = useState<AiConnection | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState("");
+  const callback = useRef(onChange);
+  callback.current = onChange;
+  useEffect(() => {
+    const controller = new AbortController();
+    setChecking(true);
+    api<AiConnection>("/ai/status", { signal: controller.signal })
+      .then((value) => { if (!controller.signal.aborted) { setConnection(value); callback.current(value); } })
+      .catch(() => { if (!controller.signal.aborted) setError("The Codex connection could not be checked."); })
+      .finally(() => { if (!controller.signal.aborted) setChecking(false); });
+    return () => controller.abort();
+  }, []);
+  async function check() {
+    setChecking(true); setError("");
+    try {
+      const value = await api<AiConnection>("/ai/status/refresh", { method: "POST", signal: AbortSignal.timeout(60000) });
+      setConnection(value); callback.current(value);
+    } catch { setError("The Codex connection could not be checked. Try again."); }
+    finally { setChecking(false); }
+  }
+  return <section className="panel assistant-core">
+    <div className="panel-heading"><h2>Codex connection</h2><Icon name="spark" size={18} /></div>
+    <div className="core-visual" aria-hidden="true"><span className="core-orb" /></div>
+    <p className="core-status" role="status">{checking ? "CHECKING CONNECTION" : connection?.authenticated ? "READ-ONLY PLANNING READY" : "PLANNING NOT CONNECTED"}</p>
+    <p className="core-description">{error || connection?.message || "Checking your local Codex sign-in."}</p>
+    <button type="button" className="button secondary connection-check" disabled={checking} onClick={() => void check()}>
+      <Icon name="refresh" size={15} />{checking ? "Checking…" : "Check connection"}
+    </button>
+  </section>;
+}
+
+function PlanningPanel({ task, project, onUpdate }: {
+  task: Task; project?: Project; onUpdate: (task: Task) => void;
+}) {
+  const [files, setFiles] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [preview, setPreview] = useState<ContextPreview | null>(null);
+  const [attempts, setAttempts] = useState<PlanAttempt[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [connection, setConnection] = useState<AiConnection | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("");
+  const callback = useRef(onUpdate);
+  callback.current = onUpdate;
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    Promise.all([
+      api<string[]>(`/projects/${task.projectId}/files`, { signal: controller.signal }),
+      api<AiConnection>("/ai/status", { signal: controller.signal }),
+    ]).then(([paths, status]) => { if (!controller.signal.aborted) { setFiles(paths); setConnection(status); } })
+      .catch((e) => { if (!controller.signal.aborted) setError(e.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [task.projectId]);
+  useEffect(() => {
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    async function poll() {
+      try {
+        const [current, history] = await Promise.all([
+          api<Task>(`/tasks/${task.id}`, { signal: controller.signal }),
+          api<PlanAttempt[]>(`/tasks/${task.id}/attempts`, { signal: controller.signal }),
+        ]);
+        if (controller.signal.aborted) return;
+        setAttempts(history);
+        setHistoryLoading(false);
+        if (current.status !== task.status) callback.current(current);
+        if (current.status === "PLANNING") timer = setTimeout(() => void poll(), 1500);
+      } catch (e) {
+        if (!controller.signal.aborted) {
+          setError((e as Error).message);
+          if (task.status === "PLANNING") timer = setTimeout(() => void poll(), 3000);
+        }
+      }
+    }
+    void poll();
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [task.id, task.status]);
+  useEffect(() => { setPreview(null); }, [task.status]);
+
+  async function review() {
+    setBusy(true); setError(""); setPreview(null);
+    try {
+      const value = await api<ContextPreview>(`/tasks/${task.id}/context`, { method: "POST", body: JSON.stringify({ files: selected }) });
+      if (mounted.current) setPreview(value);
+    } catch (e) { if (mounted.current) setError((e as Error).message); }
+    finally { if (mounted.current) setBusy(false); }
+  }
+  async function send() {
+    if (!preview) return;
+    setBusy(true); setError("");
+    try {
+      await api<PlanAttempt>(`/tasks/${task.id}/plan`, {
+        method: "POST", body: JSON.stringify({ files: preview.selectedFiles, contextHash: preview.hash }), signal: AbortSignal.timeout(60000),
+      });
+      const current = await api<Task>(`/tasks/${task.id}`);
+      if (mounted.current) { setPreview(null); callback.current(current); }
+    } catch (e) { if (mounted.current) { setError((e as Error).message); setPreview(null); } }
+    finally { if (mounted.current) setBusy(false); }
+  }
+  const canPlan = task.status === "DRAFT" || task.status === "FAILED" || task.status === "PLANNED";
+  return <section className="planning-panel" aria-label="Read-only planning">
+    <div className="planning-heading"><h3>Read-only planning</h3><span className="badge neutral">{taskLabels[task.status]}</span></div>
+    <p className="source-note">{project?.name || "This project"} · Plans are proposals. No files, commands, commits or deployments are executed.</p>
+    {task.status === "PLANNING" && <div className="planning-progress" role="status"><span className="loader" />Codex is preparing your plan. You can close this window and return from task history.</div>}
+    {task.status === "CANCELLED" && <p className="source-note">This task was cancelled. Its previous attempts remain available below.</p>}
+    {error && <p className="form-error" role="alert">{error}</p>}
+    <div className="plan-attempts">
+      <h3>Planning history</h3>
+      {!attempts.length && <p className="source-note">{historyLoading ? "Loading planning history…" : "No planning requests have been sent for this instruction."}</p>}
+      {attempts.map((attempt, index) => <details key={attempt.id} open={index === 0}>
+        <summary>{attempt.status === "SUCCEEDED" ? "Plan ready" : attempt.status.toLowerCase()} · {date(attempt.startedAt)}</summary>
+        {attempt.result && <pre className="plan-output" tabIndex={0}>{attempt.result}</pre>}
+        {attempt.error && <p className="form-error">{attempt.error}</p>}
+        {attempt.status === "CANCELLED" && <p className="source-note">Cancelled. A late result will not replace this state.</p>}
+        <details><summary>Context sent for this attempt</summary><pre className="context-preview" tabIndex={0}>{attempt.contextPreview}</pre></details>
+      </details>)}
+    </div>
+    {canPlan && <details className="planning-request" open={task.status !== "PLANNED"}>
+      <summary>{task.status === "PLANNED" ? "Review context for another plan" : "Prepare a planning request"}</summary>
+      <p className="source-note">{loading ? "Loading source choices and connection…" : connection?.message || "Codex is not connected."}</p>
+      <label className="field-label" htmlFor="context-filter">Choose source context ({selected.length}/8)</label>
+      <input id="context-filter" type="search" placeholder="Find a source file…" value={filter} onChange={(e) => setFilter(e.target.value)} disabled={busy || loading} />
+      <div className="context-files" role="group" aria-label="Source files to include">
+        {files.filter((path) => path.toLowerCase().includes(filter.toLowerCase())).map((path) => <label key={path}>
+          <input type="checkbox" checked={selected.includes(path)} disabled={busy || (!selected.includes(path) && selected.length >= 8)}
+            onChange={(e) => { setSelected((current) => e.target.checked ? [...current, path] : current.filter((item) => item !== path)); setPreview(null); }} />
+          <span>{path}</span>
+        </label>)}
+        {!loading && !files.length && <p className="source-note">No supported source files found. You can still plan from the instruction and project conventions.</p>}
+      </div>
+      <p className="source-note">Up to 8 files, 12,000 characters per file and 24,000 total. The project name, conventions, instruction and bounded source path listing are also included. No file contents are sent until you review and confirm.</p>
+      <button type="button" className="button secondary" onClick={() => void review()} disabled={busy || loading}>{busy ? "Working…" : "Review context"}</button>
+      {preview && <div className="context-review">
+        <h3>Review the exact request</h3>
+        {preview.warnings.map((warning) => <p className="source-note" key={warning}>{warning}</p>)}
+        <p className="source-note">Credential detection is limited. Check the entire preview for confidential content before sending.</p>
+        <pre className="context-preview" tabIndex={0}>{preview.prompt}</pre>
+        <button type="button" className="button primary" onClick={() => void send()} disabled={busy || !connection?.authenticated}>
+          {busy ? "Starting…" : "Send reviewed context to Codex"}<Icon name="arrow" size={16} />
+        </button>
+      </div>}
+    </details>}
+  </section>;
+}
+
 function Stat({
   icon,
   label,
@@ -986,7 +1147,7 @@ function TaskList({
           <span
             className={`badge ${task.status === "DRAFT" ? "purple" : "neutral"}`}
           >
-            {task.status === "DRAFT" ? "Draft" : "Cancelled"}
+            {taskLabels[task.status]}
           </span>
           <Icon name="arrow" size={17} />
         </button>

@@ -1579,3 +1579,27 @@ input::placeholder, textarea::placeholder { color: #91a4bf; }
 .connection { color: #a1cebf; }
 .connection.offline { color: #e4bd83; }
 .connection.offline > span { background: #e4bd83; }
+/* Read-only planning review */
+.connection-check { width: 100%; margin-top: 16px; }
+.planning-panel { margin: 22px 0; border-top: 1px solid var(--line); padding-top: 22px; }
+.planning-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.planning-progress { display: flex; align-items: center; gap: 14px; padding: 16px; margin: 15px 0; background: #153344; border-radius: 10px; font-size: 12px; line-height: 1.8; }
+.planning-progress .loader { flex-shrink: 0; width: 22px; height: 22px; }
+.context-files { max-height: 190px; overflow: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; }
+.context-files label { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; cursor: pointer; font-size: 12px; line-height: 1.6; }
+.context-files input { width: 16px; height: 16px; padding: 0; margin: 2px 0 0; accent-color: #64dfea; flex-shrink: 0; }
+.context-files span { overflow-wrap: anywhere; min-width: 0; }
+.context-review { margin-top: 22px; border: 1px solid #2d5b6e; border-radius: 12px; padding: 16px; }
+.context-preview, .plan-output { font-size: 12px; line-height: 1.8; color: #d0dff0; background: #0c1726; border: 1px solid var(--line); border-radius: 10px; padding: 16px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 340px; overflow: auto; margin: 14px 0; }
+.plan-output { max-height: 480px; }
+.plan-attempts { margin-top: 25px; }
+.plan-attempts > details { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+.plan-attempts summary { cursor: pointer; font-size: 12px; color: #a7ddeb; line-height: 1.8; }
+.modal:has(.planning-panel) { width: min(800px, calc(100vw - 28px)); }
+.context-review .button { white-space: normal; text-align: left; }
+@media (max-width: 700px) { .modal:has(.planning-panel) { padding: 20px; } .context-review { padding: 12px; } }
+.planning-request { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 16px; }
+.planning-request > summary { cursor: pointer; color: #a7ddeb; font-size: 12px; line-height: 1.8; }
+
+.modal { background: #111c2e; color: #e5edf9; border: 1px solid #2c415c; }
+.modal::backdrop { background: #030812b8; backdrop-filter: blur(6px); }

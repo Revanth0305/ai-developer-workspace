@@ -4,7 +4,7 @@ A local React + TypeScript and Spring Boot platform for managing development pro
 
 ## Current version
 
-Phases 1–3 are implemented: dashboard, persistent project registration, per-project instructions, draft tasks, task history, activity, read-only Git status, and bounded source previews. Codex is the selected AI provider. Its backend planning adapter is unfinished and has not been live-tested; planning and execution are not available through the dashboard.
+Phases 1–4 are implemented: dashboard, persistent project registration, per-project instructions, draft tasks, task history, activity, read-only Git status, and bounded source previews. Codex read-only planning is available after local connection checks and explicit context review. Code execution, managed-project Git automation and deployment are not enabled.
 
 ## Prerequisites
 
@@ -57,7 +57,7 @@ For direct backend startup from `backend/`, the default platform root is `..` an
 
 1. Select **Add project** and enter an existing absolute directory path outside this repository and its ancestors.
 2. Open the registered project to inspect its Git status and source files.
-3. Save a task instruction. It remains **Draft** until AI integration is available.
+3. Save a task instruction. In **Instruction & plan**, choose source files, select **Review context**, inspect the exact request, and explicitly send it to Codex. The result is stored as **Plan ready**; no project files are changed.
 4. Use **Settings** to save that project's conventions and instructions.
 5. Use **Task history** to view instructions and cancel drafts.
 
@@ -71,7 +71,7 @@ Project registration never creates directories, initializes Git, installs packag
 - The above paths and dependency/build outputs are excluded from Git.
 - Never put API keys in frontend code or tracked settings.
 
-The backend binds to loopback and rejects foreign browser origins and hosts. This is a single-user local application; it is not configured for public hosting or remote access. The UI uses Google Fonts with system font fallbacks; project content is not sent to an AI provider.
+The backend binds to loopback and rejects foreign browser origins and hosts. This is a single-user local application; it is not configured for public hosting or remote access. The UI uses Google Fonts with system font fallbacks; project contents are sent to Codex only after explicit context review and confirmation.
 
 ## Verification
 
@@ -86,4 +86,29 @@ See [progress](documentation/PROGRESS_TRACKER.md), [specification](documentation
 
 ## Jarvis interface update
 
-The dashboard now uses a navy-and-cyan command-center layout with instruction starters and a responsive sidebar. Existing project registration, drafts, settings, history and read-only source inspection remain available. Codex is the selected provider; its planning adapter is unfinished and has not been live-tested. Keep `WORKSPACE_CODEX_ENABLED=false` when running the application until that integration is validated. See `documentation/PROGRESS_TRACKER.md` for current verification and limitations.
+The dashboard now uses a navy-and-cyan command-center layout with instruction starters and a responsive sidebar. Existing project registration, drafts, settings, history and read-only source inspection remain available. Codex planning was live-verified on the destination with a disposable TypeScript project. Planning is disabled by default and must be enabled explicitly. Execution remains unavailable. See `documentation/PROGRESS_TRACKER.md` for current verification and limitations.
+
+
+## Enable read-only Codex planning (CP4)
+
+Use your local Codex/ChatGPT sign-in; never put passwords or tokens in this repository. With existing workspace servers stopped:
+
+```powershell
+$env:WORKSPACE_CODEX_ENABLED = 'true'
+.\scripts\Start-Workspace.ps1
+```
+
+The environment script discovers `codex.exe` on PATH. If it is not discoverable, set `WORKSPACE_CODEX_EXECUTABLE` to this computer's installed executable. Select **Check connection** in the dashboard. Each instruction still requires choosing source context and explicitly sending the reviewed request. Credential detection is limited; inspect the entire preview.
+
+To include the installed-binary compatibility test in validation:
+
+```powershell
+$env:WORKSPACE_CODEX_TEST_EXECUTABLE = (Get-Command codex.exe).Source
+.\scripts\Build-Workspace.ps1 -SkipInstall
+```
+
+This optional test uses a synthetic local provider, verifies that the model receives no tools, and checks that no authentication credential reaches that provider. It does not make a real model request. Ordinary lifecycle/protocol/context tests do not require Codex sign-in.
+
+Tested App Server: `0.167.0-alpha.3.2`. Revalidate compatibility after CLI updates. See [official App Server documentation](https://learn.chatgpt.com/docs/app-server) and [current specification](documentation/PROJECT_SPEC.md).
+
+CP4 is the review checkpoint. Wait for user approval before implementing CP5 controlled execution.

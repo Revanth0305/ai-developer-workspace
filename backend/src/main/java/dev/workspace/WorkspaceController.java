@@ -35,6 +35,7 @@ public class WorkspaceController {
         return Map.of("status", "UP", "application", "AI Developer Workspace", "time", Instant.now(), "aiProvider", "codex", "aiConfigured", codex.snapshot().authenticated(), "executionEnabled", false);
     }
     @GetMapping("/ai/status") public CodexPlanner.ConnectionStatus aiStatus() { return codex.status(); }
+    @PostMapping("/ai/status/refresh") public CodexPlanner.ConnectionStatus refreshAiStatus() { return codex.refreshStatus(); }
     @GetMapping("/projects") public List<Project> projects() { return projects.findAllByOrderByCreatedAtDesc(); }
     @GetMapping("/projects/{id}") public Project project(@PathVariable UUID id) {
         return projects.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found."));
