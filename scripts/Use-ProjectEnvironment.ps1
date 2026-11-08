@@ -1,0 +1,14 @@
+$ErrorActionPreference = 'Stop'
+$script:WorkspaceRoot = Split-Path -Parent $PSScriptRoot
+$jdkCandidate = $env:JAVA_HOME
+if (-not $jdkCandidate -or -not (Test-Path -LiteralPath (Join-Path $jdkCandidate 'bin\javac.exe'))) {
+    $jdkCandidate = [Environment]::GetEnvironmentVariable('JAVA_HOME', 'Machine')
+}
+if (-not $jdkCandidate -or -not (Test-Path -LiteralPath (Join-Path $jdkCandidate 'bin\javac.exe'))) {
+    throw 'A JDK is required. Install JDK 21 and set JAVA_HOME.'
+}
+$env:JAVA_HOME = $jdkCandidate
+$env:Path = "$(Join-Path $jdkCandidate 'bin');$env:Path"
+$env:GRADLE_USER_HOME = Join-Path $script:WorkspaceRoot '.cache\gradle'
+$env:WORKSPACE_PLATFORM_ROOT = $script:WorkspaceRoot
+$env:WORKSPACE_DATA_DIR = (Join-Path $script:WorkspaceRoot 'data').Replace('\', '/')

@@ -1,0 +1,16 @@
+/.cache/
+/.runtime/
+/data/
+/backend/data/
+**/node_modules/
+**/dist/
+**/build/
+**/.gradle/
+*.log
+.env
+.env.*
+!.env.example
+*.local
+.idea/
+.vscode/
+Thumbs.db

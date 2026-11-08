@@ -1,0 +1,1378 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
+import "./App.css";
+
+type Project = {
+  id: string;
+  name: string;
+  directory: string;
+  instructions: string;
+  createdAt: string;
+  updatedAt: string;
+};
+type Task = {
+  id: string;
+  projectId: string;
+  instruction: string;
+  status: "DRAFT" | "CANCELLED";
+  createdAt: string;
+};
+type Activity = { id: string; message: string; createdAt: string };
+type GitStatus = {
+  repository: boolean;
+  branch: string;
+  changes: string;
+  commits: string;
+  message: string;
+};
+type View = "overview" | "projects" | "history" | "settings";
+type Snapshot = { projects: Project[]; tasks: Task[]; activity: Activity[] };
+
+async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`/api${path}`, {
+    ...init,
+    headers: { "Content-Type": "application/json", ...init?.headers },
+    signal: init?.signal ?? AbortSignal.timeout(15000),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok)
+    throw new Error(body.message || `Request failed (${response.status}).`);
+  return body as T;
+}
+const date = (value: string) =>
+  new Date(value).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+const viewFromHash = (): View => {
+  const value = window.location.hash.slice(1);
+  return value === "projects" || value === "history" || value === "settings"
+    ? value
+    : "overview";
+};
+function Icon({ name, size = 20 }: { name: string; size?: number }) {
+  const paths: Record<string, ReactNode> = {
+    grid: (
+      <>
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      </>
+    ),
+    folder: <path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10H3Z" />,
+    clock: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </>
+    ),
+    settings: (
+      <>
+        <path d="m9 3-1 3-3 1v4l-2 1 2 3v3l3 1 1 2h5l1-3 3-1v-3l3-2-2-3V6l-4-1-1-2Z" />
+        <circle cx="12" cy="12" r="3" />
+      </>
+    ),
+    plus: <path d="M12 5v14M5 12h14" />,
+    arrow: <path d="M5 12h14m-6-6 6 6-6 6" />,
+    branch: (
+      <>
+        <circle cx="6" cy="5" r="2" />
+        <circle cx="18" cy="6" r="2" />
+        <circle cx="6" cy="19" r="2" />
+        <path d="M6 7v10m0-5c8 0 12-1 12-4" />
+      </>
+    ),
+    code: <path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-12-2 14" />,
+    check: <path d="m5 12 4 4L19 6" />,
+    close: <path d="m6 6 12 12M6 18 18 6" />,
+    refresh: (
+      <>
+        <path d="M20 7v5h-5M4 17v-5h5" />
+        <path d="M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" />
+      </>
+    ),
+    shield: (
+      <>
+        <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z" />
+        <path d="m8 12 3 3 5-6" />
+      </>
+    ),
+    file: (
+      <>
+        <path d="M14 3H5v18h14V8Z" />
+        <path d="M14 3v5h5M8 13h8m-8 4h5" />
+      </>
+    ),
+    spark: (
+      <path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z" />
+    ),
+  };
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {paths[name] || paths.code}
+    </svg>
+  );
+}
+
+function App() {
+  const [view, setView] = useState<View>(viewFromHash);
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [selectedId, setSelectedId] = useState(
+    () => localStorage.getItem("workspace.project") || "",
+  );
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [newProject, setNewProject] = useState(false);
+  const [instruction, setInstruction] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const requestId = useRef(0);
+  const selected = snapshot?.projects.find(
+    (project) => project.id === selectedId,
+  );
+  const projectTasks =
+    snapshot?.tasks.filter((task) => task.projectId === selectedId) || [];
+  const refresh = useCallback(async () => {
+    const id = ++requestId.current;
+    setLoading(true);
+    try {
+      const [projects, tasks, activity] = await Promise.all([
+        api<Project[]>("/projects"),
+        api<Task[]>("/tasks"),
+        api<Activity[]>("/activity"),
+        api("/health"),
+      ]);
+      if (id !== requestId.current) return;
+      setSnapshot({ projects, tasks, activity });
+      setSelectedId((current) =>
+        projects.some((project) => project.id === current)
+          ? current
+          : projects[0]?.id || "",
+      );
+      setError("");
+      setRefreshKey((key) => key + 1);
+    } catch (e) {
+      if (id === requestId.current) setError((e as Error).message);
+    } finally {
+      if (id === requestId.current) setLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    void refresh();
+    return () => {
+      requestId.current++;
+    };
+  }, [refresh]);
+  useEffect(() => {
+    localStorage.setItem("workspace.project", selectedId);
+    setInstruction("");
+  }, [selectedId]);
+  useEffect(() => {
+    const onHash = () => setView(viewFromHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  useEffect(() => {
+    if (notice) {
+      const timeout = window.setTimeout(() => setNotice(""), 5000);
+      return () => window.clearTimeout(timeout);
+    }
+  }, [notice]);
+  async function saveTask(event: FormEvent) {
+    event.preventDefault();
+    if (!selected || saving) return;
+    setSaving(true);
+    try {
+      await api<Task>("/tasks", {
+        method: "POST",
+        body: JSON.stringify({ projectId: selected.id, instruction }),
+      });
+      setInstruction("");
+      setNotice(
+        "Task saved. It will remain a draft until AI integration is configured.",
+      );
+      await refresh();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function cancelTask(task: Task) {
+    setSaving(true);
+    try {
+      setActiveTask(
+        await api<Task>(`/tasks/${task.id}/cancel`, { method: "POST" }),
+      );
+      setNotice("Draft cancelled.");
+      await refresh();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+  const nav = [
+    { id: "overview", label: "Overview", icon: "grid" },
+    { id: "projects", label: "Projects", icon: "folder" },
+    { id: "history", label: "Task history", icon: "clock" },
+    { id: "settings", label: "Settings", icon: "settings" },
+  ] as const;
+  const titles = {
+    overview: "Workspace overview",
+    projects: "Your projects",
+    history: "Task history",
+    settings: "Workspace settings",
+  };
+  const descriptions = {
+    overview: "A clear view of your projects, instructions, and next steps.",
+    projects:
+      "Connect existing folders and keep every project in its own space.",
+    history: "Every instruction has a place. Follow its status from here.",
+    settings:
+      "Project instructions and the current capabilities of your workspace.",
+  };
+  const filteredProjects =
+    snapshot?.projects.filter((project) =>
+      `${project.name} ${project.directory}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+    ) || [];
+
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <a className="brand" href="#overview" aria-label="devspace overview">
+          <span className="brand-mark">
+            <Icon name="code" size={25} />
+          </span>
+          <span>
+            devspace
+            <span className="brand-caption">AI DEVELOPER WORKSPACE</span>
+          </span>
+        </a>
+        <div className="workspace-label">
+          <span className="workspace-avatar">L</span>
+          <div>
+            Local workspace<small>Personal environment</small>
+          </div>
+          <span className="tiny-dot" />
+        </div>
+        <p className="nav-label">WORKSPACE</p>
+        <nav aria-label="Main navigation">
+          {nav.map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              className={view === item.id ? "nav-item active" : "nav-item"}
+              aria-label={item.label}
+              aria-current={view === item.id ? "page" : undefined}
+            >
+              <Icon name={item.icon} />
+              {item.label}
+              {item.id === "projects" && (
+                <span className="nav-count">
+                  {snapshot?.projects.length || 0}
+                </span>
+              )}
+            </a>
+          ))}
+        </nav>
+        <div className="sidebar-projects">
+          <div className="nav-label project-label">
+            PROJECTS
+            <button
+              className="icon-button"
+              onClick={() => setNewProject(true)}
+              aria-label="Register a project"
+            >
+              <Icon name="plus" size={16} />
+            </button>
+          </div>
+          {snapshot?.projects.slice(0, 6).map((project) => (
+            <button
+              key={project.id}
+              className={`sidebar-project ${project.id === selectedId ? "selected" : ""}`}
+              onClick={() => {
+                setSelectedId(project.id);
+                window.location.hash = "overview";
+              }}
+            >
+              <span className="project-dot" />
+              {project.name}
+            </button>
+          ))}
+          {!snapshot?.projects.length && (
+            <p className="sidebar-empty">Your projects will appear here.</p>
+          )}
+        </div>
+        <div className="sidebar-bottom">
+          <div className="local-card">
+            <Icon name="shield" size={19} />
+            <div>
+              Local by design<small>Files stay on your machine</small>
+            </div>
+          </div>
+          <span className="version">
+            FOUNDATION BUILD <span>v0.1</span>
+          </span>
+        </div>
+      </aside>
+      <div className="main-shell">
+        <header className="topbar">
+          <div className="breadcrumbs">
+            Workspace <span>/</span>{" "}
+            <strong>{nav.find((item) => item.id === view)?.label}</strong>
+          </div>
+          <div className="topbar-actions">
+            <span
+              className={`connection ${error || !snapshot ? "offline" : ""}`}
+            >
+              <span />
+              {error
+                ? "Connection needs attention"
+                : snapshot
+                  ? "Backend connected"
+                  : "Connecting…"}
+            </span>
+            <button
+              className="icon-button refresh"
+              disabled={loading}
+              onClick={() => void refresh()}
+              aria-label="Refresh workspace"
+            >
+              <Icon name="refresh" size={18} />
+            </button>
+            <span className="user-avatar" title="Local workspace user">
+              L
+            </span>
+          </div>
+        </header>
+        <main>
+          <div className="page-heading">
+            <div>
+              <p className="eyebrow">YOUR DEVELOPMENT CONTROL ROOM</p>
+              <h1>{titles[view]}</h1>
+              <p className="page-description">{descriptions[view]}</p>
+            </div>
+            <button
+              className="button primary"
+              onClick={() => setNewProject(true)}
+            >
+              <Icon name="plus" size={18} />
+              Add project
+            </button>
+          </div>
+          {error && (
+            <div className="alert error" role="alert">
+              <div>
+                <strong>Something needs attention</strong>
+                <p>{error} Check that the backend is running, then refresh.</p>
+              </div>
+              <button className="button small" onClick={() => void refresh()}>
+                Retry
+              </button>
+            </div>
+          )}
+          {notice && (
+            <div className="alert success" role="status">
+              <Icon name="check" />
+              {notice}
+            </div>
+          )}
+          {!snapshot && loading ? (
+            <div className="empty panel">
+              <span className="loader" />
+              <h2>Connecting to your workspace</h2>
+              <p>Loading projects and saved activity from the local backend.</p>
+            </div>
+          ) : (
+            <>
+              {view === "overview" && (
+                <>
+                  <section className="welcome-banner">
+                    <div>
+                      <span className="badge light">
+                        <span className="tiny-dot" />
+                        FOUNDATION READY
+                      </span>
+                      <h2>A home for what you build.</h2>
+                      <p>
+                        Connect a project, capture an instruction, and keep your
+                        work organized.
+                      </p>
+                      <a href="#projects" className="text-link">
+                        Manage your projects <Icon name="arrow" size={17} />
+                      </a>
+                    </div>
+                    <div className="banner-art" aria-hidden="true">
+                      <div className="art-orbit orbit-one" />
+                      <div className="art-orbit orbit-two" />
+                      <div className="art-code">
+                        <Icon name="code" size={40} />
+                      </div>
+                      <span className="art-chip chip-top">
+                        <Icon name="branch" size={15} />
+                        project / isolated
+                      </span>
+                      <span className="art-chip chip-bottom">
+                        <span className="tiny-dot" />
+                        ready to build
+                      </span>
+                    </div>
+                  </section>
+                  <section className="stats" aria-label="Workspace totals">
+                    <Stat
+                      icon="folder"
+                      label="Connected projects"
+                      value={snapshot?.projects.length || 0}
+                      detail="Separate folders & settings"
+                    />
+                    <Stat
+                      icon="file"
+                      label="Draft instructions"
+                      value={
+                        snapshot?.tasks.filter(
+                          (task) => task.status === "DRAFT",
+                        ).length || 0
+                      }
+                      detail="Saved and ready for planning"
+                    />
+                    <Stat
+                      icon="clock"
+                      label="Recorded tasks"
+                      value={snapshot?.tasks.length || 0}
+                      detail="Persistent task history"
+                    />
+                    <Stat
+                      icon="shield"
+                      label="Execution mode"
+                      value="Read only"
+                      detail="AI provider not configured"
+                    />
+                  </section>
+                  <div className="work-grid">
+                    <div className="work-main">
+                      <section className="panel project-panel">
+                        <div className="panel-heading">
+                          <div>
+                            <h2>Active project</h2>
+                            <p>Choose the context for your next instruction.</p>
+                          </div>
+                          <Icon name="folder" />
+                        </div>
+                        {selected ? (
+                          <>
+                            <label
+                              className="field-label"
+                              htmlFor="active-project"
+                            >
+                              Project
+                            </label>
+                            <select
+                              id="active-project"
+                              value={selectedId}
+                              onChange={(event) =>
+                                setSelectedId(event.target.value)
+                              }
+                            >
+                              {snapshot?.projects.map((project) => (
+                                <option key={project.id} value={project.id}>
+                                  {project.name}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="project-path">
+                              <Icon name="folder" size={16} />
+                              <code>{selected.directory}</code>
+                            </div>
+                            <RepositoryPanel
+                              key={selected.id}
+                              project={selected}
+                              refreshKey={refreshKey}
+                            />
+                          </>
+                        ) : (
+                          <Empty
+                            icon="folder"
+                            title="Connect your first project"
+                            description="Register an existing folder outside this platform repository to get started."
+                          >
+                            <button
+                              className="button secondary"
+                              onClick={() => setNewProject(true)}
+                            >
+                              <Icon name="plus" size={17} />
+                              Connect a folder
+                            </button>
+                          </Empty>
+                        )}
+                      </section>
+                      <section className="panel instruction-panel">
+                        <div className="panel-heading">
+                          <div>
+                            <h2>What would you like to build?</h2>
+                            <p>
+                              Give the selected project a clear, focused
+                              instruction.
+                            </p>
+                          </div>
+                          <span className="icon-tile">
+                            <Icon name="spark" />
+                          </span>
+                        </div>
+                        <form onSubmit={(event) => void saveTask(event)}>
+                          <label className="sr-only" htmlFor="instruction">
+                            Task instruction
+                          </label>
+                          <textarea
+                            id="instruction"
+                            value={instruction}
+                            onChange={(event) =>
+                              setInstruction(event.target.value)
+                            }
+                            disabled={!selected || saving}
+                            required
+                            maxLength={12000}
+                            rows={5}
+                            placeholder="For example: Add a vehicle registration form with required-field validation and connect it to the existing API."
+                          />
+                          <div className="instruction-footer">
+                            <span>
+                              <Icon name="shield" size={14} />
+                              Saved locally · no AI request yet
+                            </span>
+                            <button
+                              className="button primary"
+                              disabled={
+                                !selected || !instruction.trim() || saving
+                              }
+                              type="submit"
+                            >
+                              {saving ? "Saving…" : "Save draft"}
+                              <Icon name="arrow" size={17} />
+                            </button>
+                          </div>
+                        </form>
+                        <div className="inline-note">
+                          <Icon name="spark" size={17} />
+                          <p>
+                            <strong>
+                              AI integration is the next milestone.
+                            </strong>{" "}
+                            Your provider choice is pending. Drafts are saved;
+                            code execution is not enabled.
+                          </p>
+                        </div>
+                      </section>
+                      {selected && (
+                        <SourceBrowser
+                          key={selected.id}
+                          project={selected}
+                          refreshKey={refreshKey}
+                        />
+                      )}
+                    </div>
+                    <div className="work-aside">
+                      <section className="panel">
+                        <div className="panel-heading">
+                          <h2>Development journey</h2>
+                          <span className="badge neutral">3 / 8</span>
+                        </div>
+                        <ol className="journey">
+                          {[
+                            "Foundation",
+                            "Dashboard",
+                            "Project management",
+                            "AI integration",
+                            "Code automation",
+                            "Git automation",
+                            "Deployment",
+                            "Autonomous workflow",
+                          ].map((label, index) => (
+                            <li
+                              key={label}
+                              className={
+                                index < 3 ? "done" : index === 3 ? "next" : ""
+                              }
+                            >
+                              <span className="journey-step">
+                                {index < 3 ? (
+                                  <Icon name="check" size={13} />
+                                ) : (
+                                  index + 1
+                                )}
+                              </span>
+                              <span>
+                                {label}
+                                {index === 3 && (
+                                  <small>Provider selection pending</small>
+                                )}
+                              </span>
+                              {index === 3 && (
+                                <span className="next-label">NEXT</span>
+                              )}
+                            </li>
+                          ))}
+                        </ol>
+                      </section>
+                      <section className="panel">
+                        <div className="panel-heading">
+                          <h2>Recent activity</h2>
+                          <Icon name="clock" size={18} />
+                        </div>
+                        <ActivityList
+                          items={snapshot?.activity.slice(0, 6) || []}
+                        />
+                      </section>
+                    </div>
+                  </div>
+                  <section className="panel task-panel">
+                    <div className="panel-heading">
+                      <div>
+                        <h2>Project instructions</h2>
+                        <p>
+                          {selected
+                            ? `Saved tasks for ${selected.name}`
+                            : "Select a project to see its instructions."}
+                        </p>
+                      </div>
+                      <a href="#history" className="text-link">
+                        View all <Icon name="arrow" size={16} />
+                      </a>
+                    </div>
+                    <TaskList
+                      tasks={projectTasks.slice(0, 5)}
+                      projects={snapshot?.projects || []}
+                      onSelect={setActiveTask}
+                    />
+                  </section>
+                </>
+              )}
+              {view === "projects" && (
+                <>
+                  <div className="section-toolbar">
+                    <span>
+                      {snapshot?.projects.length || 0} connected projects
+                    </span>
+                    <label className="search">
+                      <Icon name="folder" size={17} />
+                      <input
+                        aria-label="Search projects"
+                        placeholder="Search projects…"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <div className="project-grid">
+                    {filteredProjects.map((project) => (
+                      <button
+                        className="project-card panel"
+                        key={project.id}
+                        onClick={() => {
+                          setSelectedId(project.id);
+                          window.location.hash = "overview";
+                        }}
+                      >
+                        <div className="project-card-top">
+                          <span className="icon-tile">
+                            <Icon name="folder" size={23} />
+                          </span>
+                          <span className="badge neutral">Local project</span>
+                        </div>
+                        <h2>{project.name}</h2>
+                        <p className="card-path">{project.directory}</p>
+                        <div className="project-card-bottom">
+                          <span>
+                            {snapshot?.tasks.filter(
+                              (task) => task.projectId === project.id,
+                            ).length || 0}{" "}
+                            instructions
+                          </span>
+                          <Icon name="arrow" size={18} />
+                        </div>
+                      </button>
+                    ))}
+                    <button
+                      className="add-project-card"
+                      onClick={() => setNewProject(true)}
+                    >
+                      <span className="add-circle">
+                        <Icon name="plus" size={24} />
+                      </span>
+                      <strong>Connect a project</strong>
+                      <span>Use an existing local folder</span>
+                    </button>
+                  </div>
+                  {search && !filteredProjects.length && (
+                    <p className="muted">No projects match your search.</p>
+                  )}
+                  <div className="footnote">
+                    <Icon name="shield" size={18} />
+                    <p>
+                      Project folders remain separate from this application.
+                      Registering a folder does not modify its files or
+                      initialize Git.
+                    </p>
+                  </div>
+                </>
+              )}
+              {view === "history" && (
+                <section className="panel">
+                  <div className="panel-heading">
+                    <div>
+                      <h2>All instructions</h2>
+                      <p>
+                        Drafts and cancellations are retained across restarts.
+                      </p>
+                    </div>
+                    <span className="badge neutral">
+                      {snapshot?.tasks.length || 0} tasks
+                    </span>
+                  </div>
+                  <TaskList
+                    tasks={snapshot?.tasks || []}
+                    projects={snapshot?.projects || []}
+                    onSelect={setActiveTask}
+                  />
+                </section>
+              )}
+              {view === "settings" && (
+                <div className="settings-grid">
+                  <section className="panel">
+                    <div className="panel-heading">
+                      <div>
+                        <h2>Project instructions</h2>
+                        <p>
+                          Keep conventions and context specific to each project.
+                        </p>
+                      </div>
+                      <Icon name="settings" />
+                    </div>
+                    {selected ? (
+                      <>
+                        <label
+                          className="field-label"
+                          htmlFor="settings-project"
+                        >
+                          Project
+                        </label>
+                        <select
+                          id="settings-project"
+                          value={selectedId}
+                          onChange={(event) =>
+                            setSelectedId(event.target.value)
+                          }
+                        >
+                          {snapshot?.projects.map((project) => (
+                            <option key={project.id} value={project.id}>
+                              {project.name}
+                            </option>
+                          ))}
+                        </select>
+                        <ProjectSettings
+                          key={`${selected.id}-${selected.updatedAt}`}
+                          project={selected}
+                          onSaved={async () => {
+                            setNotice("Project settings saved.");
+                            await refresh();
+                          }}
+                          onError={setError}
+                        />
+                      </>
+                    ) : (
+                      <Empty
+                        icon="folder"
+                        title="No project selected"
+                        description="Add a project to configure its instructions."
+                      />
+                    )}
+                  </section>
+                  <section className="panel">
+                    <div className="panel-heading">
+                      <h2>Platform capabilities</h2>
+                      <Icon name="shield" />
+                    </div>
+                    {[
+                      ["Local persistence", "Enabled"],
+                      ["Git & source inspection", "Read only"],
+                      ["AI provider", "Not selected"],
+                      ["Code execution", "Not enabled"],
+                      ["Push & deployment", "Not enabled"],
+                    ].map(([label, value], index) => (
+                      <div key={label} className="capability">
+                        <span>{label}</span>
+                        <span
+                          className={`badge ${index < 2 ? "green" : "neutral"}`}
+                        >
+                          {value}
+                        </span>
+                      </div>
+                    ))}
+                    <p className="settings-note">
+                      The service listens on your computer's loopback address.
+                      AI credentials will be configured on the backend when you
+                      choose a provider.
+                    </p>
+                  </section>
+                </div>
+              )}
+            </>
+          )}
+          <footer className="page-footer">
+            <span>
+              <span className="tiny-dot" />
+              Your workspace. Your machine.
+            </span>
+            <span>Build → Test → Verify → Commit → Continue</span>
+          </footer>
+        </main>
+      </div>
+      {newProject && (
+        <ProjectModal
+          onClose={() => setNewProject(false)}
+          onCreated={async (project) => {
+            setSelectedId(project.id);
+            setNewProject(false);
+            window.location.hash = "overview";
+            setNotice("Project connected. Its files have not been modified.");
+            await refresh();
+          }}
+        />
+      )}
+      {activeTask && (
+        <Modal title="Instruction details" onClose={() => setActiveTask(null)}>
+          <div className="task-detail-meta">
+            <span
+              className={`badge ${activeTask.status === "DRAFT" ? "purple" : "neutral"}`}
+            >
+              {activeTask.status}
+            </span>
+            <span>{date(activeTask.createdAt)}</span>
+          </div>
+          <h3>
+            {snapshot?.projects.find(
+              (project) => project.id === activeTask.projectId,
+            )?.name || "Project"}
+          </h3>
+          <pre className="task-instruction">{activeTask.instruction}</pre>
+          <p className="muted">
+            {activeTask.status === "DRAFT"
+              ? "This instruction is stored locally. No AI request or code execution has taken place."
+              : "This draft was cancelled. It remains in history for reference."}
+          </p>
+          {activeTask.status === "DRAFT" && (
+            <button
+              className="button secondary"
+              disabled={saving}
+              onClick={() => void cancelTask(activeTask)}
+            >
+              {saving ? "Cancelling…" : "Cancel draft"}
+            </button>
+          )}
+        </Modal>
+      )}
+    </div>
+  );
+}
+function Stat({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: string;
+  label: string;
+  value: string | number;
+  detail: string;
+}) {
+  return (
+    <div className="stat panel">
+      <div className="stat-top">
+        <span>{label}</span>
+        <Icon name={icon} size={19} />
+      </div>
+      <strong>{value}</strong>
+      <small>{detail}</small>
+    </div>
+  );
+}
+function Empty({
+  icon,
+  title,
+  description,
+  children,
+}: {
+  icon: string;
+  title: string;
+  description: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="empty">
+      <span className="empty-icon">
+        <Icon name={icon} size={25} />
+      </span>
+      <h3>{title}</h3>
+      <p>{description}</p>
+      {children}
+    </div>
+  );
+}
+function ActivityList({ items }: { items: Activity[] }) {
+  if (!items.length)
+    return (
+      <div className="quiet-empty">
+        <Icon name="clock" size={24} />
+        <p>A fresh start.</p>
+        <small>Project and task activity will appear here.</small>
+      </div>
+    );
+  return (
+    <div className="activity-list">
+      {items.map((item) => (
+        <div className="activity-item" key={item.id}>
+          <span className="activity-dot" />
+          <div>
+            <p>{item.message}</p>
+            <time>{date(item.createdAt)}</time>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+function TaskList({
+  tasks,
+  projects,
+  onSelect,
+}: {
+  tasks: Task[];
+  projects: Project[];
+  onSelect: (task: Task) => void;
+}) {
+  if (!tasks.length)
+    return (
+      <div className="task-empty">
+        <Icon name="file" size={23} />
+        <span>
+          No instructions yet. Save your first draft from the overview.
+        </span>
+      </div>
+    );
+  return (
+    <div className="task-list">
+      {tasks.map((task) => (
+        <button
+          className="task-row"
+          key={task.id}
+          onClick={() => onSelect(task)}
+        >
+          <span className="task-symbol">
+            <Icon name="file" size={19} />
+          </span>
+          <span className="task-text">
+            <strong>{task.instruction}</strong>
+            <small>
+              {projects.find((project) => project.id === task.projectId)
+                ?.name || "Project"}{" "}
+              <span>·</span> {date(task.createdAt)}
+            </small>
+          </span>
+          <span
+            className={`badge ${task.status === "DRAFT" ? "purple" : "neutral"}`}
+          >
+            {task.status === "DRAFT" ? "Draft" : "Cancelled"}
+          </span>
+          <Icon name="arrow" size={17} />
+        </button>
+      ))}
+    </div>
+  );
+}
+function RepositoryPanel({
+  project,
+  refreshKey,
+}: {
+  project: Project;
+  refreshKey: number;
+}) {
+  const [status, setStatus] = useState<GitStatus | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    setStatus(null);
+    setError("");
+    api<GitStatus>(`/projects/${project.id}/git`, { signal: controller.signal })
+      .then(setStatus)
+      .catch((e) => {
+        if (!controller.signal.aborted) setError(e.message);
+      });
+    return () => controller.abort();
+  }, [project.id, refreshKey]);
+  return (
+    <div className="repo-status">
+      <div>
+        <Icon name="branch" size={17} />
+        <strong>
+          {error
+            ? "Inspection unavailable"
+            : status
+              ? status.repository
+                ? status.branch
+                : "No Git repository"
+              : "Inspecting repository…"}
+        </strong>
+        {status?.repository && (
+          <span className={`badge ${status.changes ? "amber" : "green"}`}>
+            {status.changes ? "Uncommitted changes" : "Working tree clean"}
+          </span>
+        )}
+      </div>
+      {error ? (
+        <p className="muted">{error}</p>
+      ) : status?.repository ? (
+        <>
+          <p className="muted">
+            {status.commits.split("\n")[0] || "No commits yet"}
+          </p>
+          {status.changes && (
+            <details>
+              <summary>View working tree changes</summary>
+              <pre>{status.changes}</pre>
+            </details>
+          )}
+        </>
+      ) : (
+        status && (
+          <p className="muted">
+            {status.message} You can still save instructions.
+          </p>
+        )
+      )}
+    </div>
+  );
+}
+function SourceBrowser({
+  project,
+  refreshKey,
+}: {
+  project: Project;
+  refreshKey: number;
+}) {
+  const [files, setFiles] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState("");
+  const [content, setContent] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(true);
+  useEffect(() => {
+    const controller = new AbortController();
+    setBusy(true);
+    setError("");
+    api<string[]>(`/projects/${project.id}/files`, {
+      signal: controller.signal,
+    })
+      .then(setFiles)
+      .catch((e) => {
+        if (!controller.signal.aborted) setError(e.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setBusy(false);
+      });
+    return () => controller.abort();
+  }, [project.id, refreshKey]);
+  useEffect(() => {
+    if (!selectedFile) return;
+    const controller = new AbortController();
+    setContent("Loading source…");
+    setError("");
+    api<{ content: string }>(
+      `/projects/${project.id}/file?path=${encodeURIComponent(selectedFile)}`,
+      { signal: controller.signal },
+    )
+      .then((result) => setContent(result.content))
+      .catch((e) => {
+        if (!controller.signal.aborted) {
+          setError(e.message);
+          setContent("");
+        }
+      });
+    return () => controller.abort();
+  }, [project.id, selectedFile]);
+  return (
+    <section className="panel">
+      <div className="panel-heading">
+        <div>
+          <h2>Source preview</h2>
+          <p>Read-only context from the selected folder.</p>
+        </div>
+        <span className="badge neutral">
+          {files.length}
+          {files.length === 250 ? "+" : ""} files
+        </span>
+      </div>
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+      {busy ? (
+        <p className="muted">Reading project files…</p>
+      ) : files.length ? (
+        <>
+          <label className="field-label" htmlFor="source-file">
+            Source file
+          </label>
+          <select
+            id="source-file"
+            value={selectedFile}
+            onChange={(event) => setSelectedFile(event.target.value)}
+          >
+            <option value="">Choose a file to preview</option>
+            {files.map((file) => (
+              <option key={file} value={file}>
+                {file}
+              </option>
+            ))}
+          </select>
+          {selectedFile && (
+            <pre className="source-preview">
+              <code>{content}</code>
+            </pre>
+          )}
+        </>
+      ) : (
+        <p className="muted">
+          No supported source files found. Generated folders and hidden files
+          are excluded.
+        </p>
+      )}
+      <p className="source-note">
+        Bounded to 250 files and 12 folder levels. Hidden files, common
+        credential filenames, and generated folders are excluded. Nothing is
+        sent to AI.
+      </p>
+    </section>
+  );
+}
+function ProjectSettings({
+  project,
+  onSaved,
+  onError,
+}: {
+  project: Project;
+  onSaved: () => Promise<void>;
+  onError: (value: string) => void;
+}) {
+  const [name, setName] = useState(project.name);
+  const [instructions, setInstructions] = useState(project.instructions);
+  const [saving, setSaving] = useState(false);
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      await api(`/projects/${project.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ name, instructions }),
+      });
+      await onSaved();
+    } catch (e) {
+      onError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+  return (
+    <form className="settings-form" onSubmit={(event) => void submit(event)}>
+      <label className="field-label" htmlFor="project-name">
+        Project name
+      </label>
+      <input
+        id="project-name"
+        required
+        maxLength={100}
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+      />
+      <label className="field-label" htmlFor="project-instructions">
+        Project conventions & instructions
+      </label>
+      <textarea
+        id="project-instructions"
+        rows={8}
+        maxLength={8000}
+        value={instructions}
+        onChange={(event) => setInstructions(event.target.value)}
+        placeholder="Describe the stack, coding conventions, checks, and boundaries for this project."
+      />
+      <p className="source-note">
+        These settings are saved separately for this project. They are not sent
+        to an AI provider yet.
+      </p>
+      <button className="button primary" disabled={saving || !name.trim()}>
+        {saving ? "Saving…" : "Save settings"}
+      </button>
+    </form>
+  );
+}
+function ProjectModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: (project: Project) => Promise<void>;
+}) {
+  const [name, setName] = useState("");
+  const [directory, setDirectory] = useState("");
+  const [instructions, setInstructions] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      await onCreated(
+        await api<Project>("/projects", {
+          method: "POST",
+          body: JSON.stringify({ name, directory, instructions }),
+        }),
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+  return (
+    <Modal title="Connect a project" onClose={saving ? undefined : onClose}>
+      <p className="modal-description">
+        Register an existing project folder. Its files stay where they are.
+      </p>
+      <form onSubmit={(event) => void submit(event)}>
+        <label className="field-label" htmlFor="new-name">
+          Project name
+        </label>
+        <input
+          id="new-name"
+          autoFocus
+          required
+          maxLength={100}
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="Fleet Management"
+        />
+        <label className="field-label" htmlFor="new-directory">
+          Absolute folder path
+        </label>
+        <input
+          id="new-directory"
+          required
+          maxLength={2048}
+          value={directory}
+          onChange={(event) => setDirectory(event.target.value)}
+          placeholder="C:\Development\fleet-management"
+        />
+        <p className="field-hint">
+          Choose an existing folder outside this platform repository. Copy its
+          path from File Explorer.
+        </p>
+        <label className="field-label" htmlFor="new-instructions">
+          Project instructions <span className="muted">(optional)</span>
+        </label>
+        <textarea
+          id="new-instructions"
+          rows={3}
+          maxLength={8000}
+          value={instructions}
+          onChange={(event) => setInstructions(event.target.value)}
+          placeholder="Stack, coding conventions, and relevant checks…"
+        />
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="button secondary"
+            disabled={saving}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="button primary"
+            disabled={saving || !name.trim() || !directory.trim()}
+          >
+            {saving ? "Connecting…" : "Connect project"}
+            <Icon name="arrow" size={17} />
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+function Modal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose?: () => void;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    const dialog = ref.current;
+    const previous = document.activeElement as HTMLElement | null;
+    dialog?.showModal();
+    const cancel = (event: Event) => {
+      event.preventDefault();
+      closeRef.current?.();
+    };
+    dialog?.addEventListener("cancel", cancel);
+    return () => {
+      dialog?.removeEventListener("cancel", cancel);
+      dialog?.close();
+      previous?.focus();
+    };
+  }, []);
+  return (
+    <dialog ref={ref} className="modal" aria-labelledby="modal-title">
+      <div className="modal-heading">
+        <h2 id="modal-title">{title}</h2>
+        <button
+          disabled={!onClose}
+          className="icon-button"
+          aria-label="Close dialog"
+          onClick={onClose}
+        >
+          <Icon name="close" />
+        </button>
+      </div>
+      {children}
+    </dialog>
+  );
+}
+export default App;
