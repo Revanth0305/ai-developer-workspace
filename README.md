@@ -4,7 +4,7 @@ A local React + TypeScript and Spring Boot platform for managing development pro
 
 ## Current version
 
-Phases 1–3 are implemented: dashboard, persistent project registration, per-project instructions, draft tasks, task history, activity, read-only Git status, and bounded source previews. AI integration and execution are not enabled. The AI provider will be chosen later.
+Phases 1–3 are implemented: dashboard, persistent project registration, per-project instructions, draft tasks, task history, activity, read-only Git status, and bounded source previews. Codex is the selected AI provider. Its backend planning adapter is unfinished and has not been live-tested; planning and execution are not available through the dashboard.
 
 ## Prerequisites
 
@@ -21,6 +21,7 @@ From the repository root:
 
 ```powershell
 .\scripts\Build-Workspace.ps1
+$env:WORKSPACE_CODEX_ENABLED = 'false'
 .\scripts\Start-Workspace.ps1
 ```
 
