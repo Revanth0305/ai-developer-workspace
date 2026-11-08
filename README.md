@@ -81,3 +81,8 @@ The backend binds to loopback and rejects foreign browser origins and hosts. Thi
 This runs the TypeScript check, Vite production build, backend integration tests, and executable JAR build. Reports are in `backend/build/reports/tests/test/index.html`.
 
 See [progress](documentation/PROGRESS_TRACKER.md), [specification](documentation/PROJECT_SPEC.md), and [workflow](documentation/DEVELOPMENT_WORKFLOW.md).
+
+
+## Jarvis interface update
+
+The dashboard now uses a navy-and-cyan command-center layout with instruction starters and a responsive sidebar. Existing project registration, drafts, settings, history and read-only source inspection remain available. Codex is the selected provider; its planning adapter is unfinished and has not been live-tested. Keep `WORKSPACE_CODEX_ENABLED=false` when running the application until that integration is validated. See `documentation/PROGRESS_TRACKER.md` for current verification and limitations.

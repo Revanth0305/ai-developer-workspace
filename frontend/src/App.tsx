@@ -235,13 +235,13 @@ function App() {
     { id: "settings", label: "Settings", icon: "settings" },
   ] as const;
   const titles = {
-    overview: "Workspace overview",
+    overview: "Good to see you.",
     projects: "Your projects",
     history: "Task history",
     settings: "Workspace settings",
   };
   const descriptions = {
-    overview: "A clear view of your projects, instructions, and next steps.",
+    overview: "Your projects, your ideas, your next move. All in one workspace.",
     projects:
       "Connect existing folders and keep every project in its own space.",
     history: "Every instruction has a place. Follow its status from here.",
@@ -258,12 +258,12 @@ function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <a className="brand" href="#overview" aria-label="devspace overview">
+        <a className="brand" href="#overview" aria-label="Jarvis workspace overview">
           <span className="brand-mark">
             <Icon name="code" size={25} />
           </span>
           <span>
-            devspace
+            JARVIS
             <span className="brand-caption">AI DEVELOPER WORKSPACE</span>
           </span>
         </a>
@@ -367,8 +367,8 @@ function App() {
         <main>
           <div className="page-heading">
             <div>
-              <p className="eyebrow">YOUR DEVELOPMENT CONTROL ROOM</p>
-              <h1>{titles[view]}</h1>
+              <p className="eyebrow">YOUR COMMAND CENTER</p>
+              <h1>{titles[view]}{view === "overview" && <span className="heading-subline">What’s your next move?</span>}</h1>
               <p className="page-description">{descriptions[view]}</p>
             </div>
             <button
@@ -406,37 +406,6 @@ function App() {
             <>
               {view === "overview" && (
                 <>
-                  <section className="welcome-banner">
-                    <div>
-                      <span className="badge light">
-                        <span className="tiny-dot" />
-                        FOUNDATION READY
-                      </span>
-                      <h2>A home for what you build.</h2>
-                      <p>
-                        Connect a project, capture an instruction, and keep your
-                        work organized.
-                      </p>
-                      <a href="#projects" className="text-link">
-                        Manage your projects <Icon name="arrow" size={17} />
-                      </a>
-                    </div>
-                    <div className="banner-art" aria-hidden="true">
-                      <div className="art-orbit orbit-one" />
-                      <div className="art-orbit orbit-two" />
-                      <div className="art-code">
-                        <Icon name="code" size={40} />
-                      </div>
-                      <span className="art-chip chip-top">
-                        <Icon name="branch" size={15} />
-                        project / isolated
-                      </span>
-                      <span className="art-chip chip-bottom">
-                        <span className="tiny-dot" />
-                        ready to build
-                      </span>
-                    </div>
-                  </section>
                   <section className="stats" aria-label="Workspace totals">
                     <Stat
                       icon="folder"
@@ -464,7 +433,7 @@ function App() {
                       icon="shield"
                       label="Execution mode"
                       value="Read only"
-                      detail="AI provider not configured"
+                      detail="Codex integration in progress"
                     />
                   </section>
                   <div className="work-grid">
@@ -527,7 +496,7 @@ function App() {
                       <section className="panel instruction-panel">
                         <div className="panel-heading">
                           <div>
-                            <h2>What would you like to build?</h2>
+                            <h2>Command workspace</h2>
                             <p>
                               Give the selected project a clear, focused
                               instruction.
@@ -536,6 +505,18 @@ function App() {
                           <span className="icon-tile">
                             <Icon name="spark" />
                           </span>
+                        </div>
+                        <div className="prompt-starters" aria-label="Instruction starters">
+                          {[
+                            ["Plan a feature", "Plan a new feature: "],
+                            ["Review code", "Review the project for "],
+                            ["Investigate a bug", "Investigate this issue: "],
+                          ].map(([label, prompt]) => (
+                            <button key={label} type="button" disabled={!selected || saving}
+                              onClick={() => { setInstruction(prompt); document.getElementById("instruction")?.focus(); }}>
+                              {label}
+                            </button>
+                          ))}
                         </div>
                         <form onSubmit={(event) => void saveTask(event)}>
                           <label className="sr-only" htmlFor="instruction">
@@ -576,7 +557,7 @@ function App() {
                             <strong>
                               AI integration is the next milestone.
                             </strong>{" "}
-                            Your provider choice is pending. Drafts are saved;
+                            Codex is selected. Planning integration is unfinished. Drafts are saved;
                             code execution is not enabled.
                           </p>
                         </div>
@@ -590,6 +571,12 @@ function App() {
                       )}
                     </div>
                     <div className="work-aside">
+                      <section className="panel assistant-core">
+                        <div className="panel-heading"><h2>Workspace core</h2><Icon name="spark" size={18} /></div>
+                        <div className="core-visual" aria-hidden="true"><span className="core-orb" /></div>
+                        <p className="core-status">PLANNING IN DEVELOPMENT</p>
+                        <p className="core-description">Codex selected. Save instructions locally while integration is completed.</p>
+                      </section>
                       <section className="panel">
                         <div className="panel-heading">
                           <h2>Development journey</h2>
@@ -622,7 +609,7 @@ function App() {
                               <span>
                                 {label}
                                 {index === 3 && (
-                                  <small>Provider selection pending</small>
+                                  <small>Codex integration in progress</small>
                                 )}
                               </span>
                               {index === 3 && (
@@ -813,7 +800,7 @@ function App() {
                     {[
                       ["Local persistence", "Enabled"],
                       ["Git & source inspection", "Read only"],
-                      ["AI provider", "Not selected"],
+                      ["AI provider", "Codex · integration pending"],
                       ["Code execution", "Not enabled"],
                       ["Push & deployment", "Not enabled"],
                     ].map(([label, value], index) => (
@@ -828,8 +815,8 @@ function App() {
                     ))}
                     <p className="settings-note">
                       The service listens on your computer's loopback address.
-                      AI credentials will be configured on the backend when you
-                      choose a provider.
+                      Codex will use local sign-in once the unfinished integration
+                      is validated. No credentials are stored in this dashboard.
                     </p>
                   </section>
                 </div>

@@ -39,3 +39,16 @@ Updated: 2026-11-08 (Asia/Calcutta)
 ## Next requirement
 
 Restore on the destination Windows computer and read MIGRATION_HANDOFF.md. The user selected signed-in Codex rather than a separate API-key provider. Wait for the user's changes before continuing the unfinished integration. Ask which Git hosting account and repository to use before any external connection or push.
+
+
+## Destination review and Jarvis UI — 2026-11-08
+
+- Restored offline history and the complete transfer snapshot into the destination working folder. Migration snapshot checkpoint: aed4a4a. Original transfer package remains untouched.
+- User requested the Jarvis reference as UI direction: navy surfaces, cyan actions, stronger headings, a command-first overview, CSS workspace orb, instruction starters, and responsive navigation. Existing registration, drafts, project settings, source preview and history remain connected to the local backend.
+- Corrected stale provider labels: Codex is selected, but planning integration remains unfinished and has not been live-tested. CP4 is still partial; CP5–8 remain unimplemented.
+- Destination tools: Git 2.56.0, Node.js 24.15.0, npm 11.13.0, Eclipse Temurin JDK/compiler 21.0.13; machine JAVA_HOME configured.
+- Frontend type checking/production build and backend JAR build passed. All seven existing backend regression tests passed, zero failures/errors.
+- Build environment workaround: the sandbox temporary path is too long for Java local sockets. Validation used a process-only jdk.net.unixdomain.tmpdir override to a shorter local temporary folder. No machine execution policy or security settings changed.
+- Lint could not run: Windows Application Control blocked oxlint's native binding. No policy bypass was attempted for that block.
+- Browser verification uses a separate ignored .runtime/ui-verification-data database and a disposable external review folder. Codex remains explicitly disabled. Desktop and 390px mobile layouts checked; no horizontal document overflow. Verified project registration, instruction starter, saved draft/history, settings status and actual source preview.
+- User selected a public GitHub repository: Revanth0305/ai-developer-workspace. Repository created; initial push authentication pending at this checkpoint. Local data, caches and credentials are excluded from Git.
