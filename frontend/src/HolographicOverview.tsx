@@ -1,5 +1,6 @@
 import type { FormEvent, ReactNode } from "react";
 import "./HolographicOverview.css";
+import { uiPreview } from "./previewMode";
 
 type Project = { id: string; name: string };
 type Task = { id: string; instruction: string; status: string; projectId: string };
@@ -134,8 +135,8 @@ export default function HolographicOverview(p: Props) {
       </section>
     </div>
     <div className="holo-command-area"><div className="command-project"><span><span className="pulse-dot cyan" />{selected ? "WORKING IN" : "YOUR WORKSPACE"}</span>{selected ? <select aria-label="Command project" value={p.selectedId} onChange={event => p.onProject(event.target.value)}>{p.projects.map(project => <option value={project.id} key={project.id}>{project.name}</option>)}</select> : <button type="button" onClick={p.onAdd}>Connect your first project <HoloIcon name="arrow" size={13} /></button>}</div>
-      <form className="holo-command" onSubmit={p.onSubmit}><span className="command-spark"><HoloIcon name="spark" size={26} /></span><label className="sr-only" htmlFor="jarvis-command">Task instruction</label><textarea id="jarvis-command" rows={1} value={p.instruction} disabled={!selected || p.saving} onChange={event => p.onInstruction(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} maxLength={12000} required placeholder={selected ? "Ask Jarvis to plan, build, or investigate…" : "Connect a project to start creating…"} /><span className="command-divider" /><button type="submit" className="command-send" disabled={!selected || !p.instruction.trim() || p.saving} aria-label={p.saving ? "Saving instruction" : "Save instruction draft"}><HoloIcon name="send" size={25} /></button></form>
-      <p className="command-reassurance">Saved as a draft. You review the context before Codex starts.</p>
+      <form className="holo-command" onSubmit={event => { if (uiPreview) event.preventDefault(); else p.onSubmit(event); }}><span className="command-spark"><HoloIcon name="spark" size={26} /></span><label className="sr-only" htmlFor="jarvis-command">Task instruction</label><textarea id="jarvis-command" rows={1} value={p.instruction} disabled={!selected || p.saving} onChange={event => p.onInstruction(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} maxLength={12000} required placeholder={selected ? "Ask Jarvis to plan, build, or investigate…" : "Connect a project to start creating…"} /><span className="command-divider" /><button type="submit" className="command-send" disabled={uiPreview || !selected || !p.instruction.trim() || p.saving} aria-label={p.saving ? "Saving instruction" : "Save instruction draft"}><HoloIcon name="send" size={25} /></button></form>
+      <p className="command-reassurance">{uiPreview ? "UI preview · Try typing here. Saving and development actions are disabled." : "Saved as a draft. You review the context before Codex starts."}</p>
     </div>
     <div className="holo-quick-actions" aria-label="Quick actions">
       <button type="button" onClick={p.onAdd}><HoloIcon name="plus" /><span>Connect a project</span></button>

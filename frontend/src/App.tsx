@@ -4,6 +4,7 @@ import "./App.css";
 import ExecutionPanel from "./ExecutionPanel";
 import HolographicOverview, { HoloIcon } from "./HolographicOverview";
 import { DeploymentSummary } from "./DeploymentPanel";
+import { uiPreview } from "./previewMode";
 
 type Project = {
   id: string;
@@ -38,6 +39,7 @@ type View = "overview" | "workspace" | "projects" | "history" | "settings";
 type Snapshot = { projects: Project[]; tasks: Task[]; activity: Activity[] };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  if (uiPreview && init?.method && init.method !== "GET") throw new Error("UI preview only: development actions are disabled.");
   const response = await fetch(`/api${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
@@ -404,7 +406,7 @@ function App() {
             onPointerEnter={event => { if (event.pointerType === "mouse" && window.matchMedia("(min-width: 601px) and (hover: hover)").matches) document.getElementById("workspace-navigation")?.showPopover(); }}>
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h12M4 18h16" /></svg>
           </button>
-          <a className="header-brand" href="#overview" aria-label="Jarvis home"><span className="brand-mark"><HoloIcon name="spark" size={22} /></span><span>JARVIS<small>AI Development Assistant</small></span></a>
+          <a className="header-brand" href="#overview" aria-label="Jarvis home"><span className="brand-mark"><HoloIcon name="spark" size={22} /></span><span>JARVIS<small>{uiPreview ? "UI preview · sample data" : "AI Development Assistant"}</small></span></a>
           <div className="topbar-actions">
             <span
               className={`connection ${error || !snapshot ? "offline" : ""}`}
@@ -413,7 +415,7 @@ function App() {
               {error
                 ? "Connection needs attention"
                 : snapshot
-                  ? "Backend connected"
+                  ? uiPreview ? "Read-only UI preview" : "Backend connected"
                   : "Connecting…"}
             </span>
             <button
@@ -833,7 +835,7 @@ function App() {
           {taskPane === "plan" && (activeTask.status === "DRAFT" || activeTask.status === "PLANNING") && (
             <button
               className="button secondary"
-              disabled={saving}
+              disabled={uiPreview || saving}
               onClick={() => void cancelTask(activeTask)}
             >
               {saving ? "Cancelling…" : activeTask.status === "PLANNING" ? "Cancel planning" : "Cancel draft"}
@@ -872,7 +874,7 @@ function CodexStatus({ onChange }: { onChange: (status: AiConnection) => void })
     <div className="core-visual" aria-hidden="true"><span className="core-orb" /></div>
     <p className="core-status" role="status">{checking ? "CHECKING CONNECTION" : connection?.authenticated ? "READ-ONLY PLANNING READY" : "PLANNING NOT CONNECTED"}</p>
     <p className="core-description">{error || connection?.message || "Checking your local Codex sign-in."}</p>
-    <button type="button" className="button secondary connection-check" disabled={checking} onClick={() => void check()}>
+    <button type="button" className="button secondary connection-check" disabled={uiPreview || checking} onClick={() => void check()}>
       <Icon name="refresh" size={15} />{checking ? "Checking…" : "Check connection"}
     </button>
   </section>;
@@ -977,7 +979,7 @@ function PlanningPanel({ task, project, onUpdate }: {
       <summary>{task.status === "PLANNED" ? "Review context for another plan" : "Prepare a planning request"}</summary>
       <p className="source-note">{loading ? "Loading source choices and connection…" : connection?.message || "Codex is not connected."}</p>
       <label className="field-label" htmlFor="context-filter">Choose source context ({selected.length}/8)</label>
-      <input id="context-filter" type="search" placeholder="Find a source file…" value={filter} onChange={(e) => setFilter(e.target.value)} disabled={busy || loading} />
+      <input id="context-filter" type="search" placeholder="Find a source file…" value={filter} onChange={(e) => setFilter(e.target.value)} disabled={uiPreview || busy || loading} />
       <div className="context-files" role="group" aria-label="Source files to include">
         {files.filter((path) => path.toLowerCase().includes(filter.toLowerCase())).map((path) => <label key={path}>
           <input type="checkbox" checked={selected.includes(path)} disabled={busy || (!selected.includes(path) && selected.length >= 8)}
@@ -987,13 +989,13 @@ function PlanningPanel({ task, project, onUpdate }: {
         {!loading && !files.length && <p className="source-note">No supported source files found. You can still plan from the instruction and project conventions.</p>}
       </div>
       <p className="source-note">Up to 8 files, 12,000 characters per file and 24,000 total. The project name, conventions, instruction and bounded source path listing are also included. No file contents are sent until you review and confirm.</p>
-      <button type="button" className="button secondary" onClick={() => void review()} disabled={busy || loading}>{busy ? "Working…" : "Review context"}</button>
+      <button type="button" className="button secondary" onClick={() => void review()} disabled={uiPreview || busy || loading}>{busy ? "Working…" : "Review context"}</button>
       {preview && <div className="context-review">
         <h3>Review the exact request</h3>
         {preview.warnings.map((warning) => <p className="source-note" key={warning}>{warning}</p>)}
         <p className="source-note">Credential detection is limited. Check the entire preview for confidential content before sending.</p>
         <pre className="context-preview" tabIndex={0}>{preview.prompt}</pre>
-        <button type="button" className="button primary" onClick={() => void send()} disabled={busy || !connection?.authenticated}>
+        <button type="button" className="button primary" onClick={() => void send()} disabled={uiPreview || busy || !connection?.authenticated}>
           {busy ? "Starting…" : "Send reviewed context to Codex"}<Icon name="arrow" size={16} />
         </button>
       </div>}
@@ -1313,7 +1315,7 @@ function ProjectSettings({
         These settings are saved separately for this project and included only
         in reviewed AI requests.
       </p>
-      <button className="button primary" disabled={saving || !name.trim()}>
+      <button className="button primary" disabled={uiPreview || saving || !name.trim()}>
         {saving ? "Saving…" : "Save settings"}
       </button>
     </form>
@@ -1408,7 +1410,7 @@ function ProjectModal({
           </button>
           <button
             className="button primary"
-            disabled={saving || !name.trim() || !directory.trim()}
+            disabled={uiPreview || saving || !name.trim() || !directory.trim()}
           >
             {saving ? "Connecting…" : "Connect project"}
             <Icon name="arrow" size={17} />
