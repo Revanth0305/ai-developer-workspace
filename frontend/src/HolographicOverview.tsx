@@ -112,7 +112,7 @@ export default function HolographicOverview(p: Props) {
     { label: "Git", icon: "branch", action: () => p.onWorkflow("git") },
     { label: "Plan", icon: "plan", action: () => plan("Plan a new feature: ") },
     { label: "Manage", icon: "cube", action: () => { window.location.hash = "projects"; } },
-    { label: "Monitor", icon: "chart", action: () => { window.location.hash = "history"; } },
+    { label: "Monitor", icon: "chart", action: () => { window.location.hash = "workspace"; } },
   ];
   return <section className="holo-overview" aria-label="Jarvis command center">
     <Observatory />
@@ -142,7 +142,7 @@ export default function HolographicOverview(p: Props) {
       <button type="button" onClick={p.onContinue} disabled={!tasks.length}><HoloIcon name="play" /><span>Continue last work</span></button>
       <button type="button" disabled={!selected} onClick={() => plan("Plan a new feature: ")}><HoloIcon name="plan" /><span>Plan a feature</span></button>
       <button type="button" disabled={!selected} onClick={() => plan("Review the project for ")}><HoloIcon name="spark" /><span>Review code</span></button>
-      <button type="button" onClick={() => { window.location.hash = "history"; }}><HoloIcon name="chart" /><span>Get project update</span></button>
+      <button type="button" onClick={() => { window.location.hash = "workspace"; }}><HoloIcon name="chart" /><span>Get project update</span></button>
     </div>
     <div className="holo-shortcut"><kbd>Ctrl K</kbd><span>Bring your next idea to Jarvis</span><i /> <span className="local-signature">YOUR MACHINE. YOUR CONTROL.</span></div>
   </section>;

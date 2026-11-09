@@ -6,7 +6,7 @@ Provide a personal local interface for separate development repositories, projec
 
 ## Implemented architecture (CP1–6)
 
-- Frontend: React, TypeScript, Vite, a responsive SVG/CSS holographic Jarvis command center and a hover/tap navigation popover. No permanent side rail or added frontend dependencies.
+- Frontend: React, TypeScript, Vite, a responsive SVG/CSS holographic Jarvis command center and a hover/tap navigation popover. No permanent side rail or added frontend dependencies. The overview contains only Jarvis, its command bar and quick actions; operational project/source/connection/progress/activity/instruction panels render on a separate #workspace route.
 - Backend: Spring Boot / Java 21, validation and loopback Host/Origin guards.
 - Storage: file-backed H2/JPA for projects, tasks, activity and separate planning, execution and Git publication records.
 - Source access: bounded read-only listing and previews. Managed folders remain outside the platform repository.

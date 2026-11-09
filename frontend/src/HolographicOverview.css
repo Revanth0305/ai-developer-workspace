@@ -147,3 +147,7 @@ body:has(.holographic-shell) { background: #060b19; }
 @media (prefers-reduced-motion: reduce) { .holographic-shell .sidebar[popover]:popover-open { animation: none; } }
 
 .holographic-shell .holo-command textarea { field-sizing: content; resize: none; }
+
+/* The landing page ends with its quick actions; operational details have their own route. */
+.holographic-shell .header-brand { margin-right: auto; }
+.holographic-shell .workspace-main .work-grid { border-top: 0; padding-top: 0; margin-top: 0; }

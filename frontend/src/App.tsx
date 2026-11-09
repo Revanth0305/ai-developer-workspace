@@ -33,7 +33,7 @@ type GitStatus = {
   commits: string;
   message: string;
 };
-type View = "overview" | "projects" | "history" | "settings";
+type View = "overview" | "workspace" | "projects" | "history" | "settings";
 type Snapshot = { projects: Project[]; tasks: Task[]; activity: Activity[] };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -56,7 +56,7 @@ const date = (value: string) =>
   });
 const viewFromHash = (): View => {
   const value = window.location.hash.slice(1);
-  return value === "projects" || value === "history" || value === "settings"
+  return value === "workspace" || value === "projects" || value === "history" || value === "settings"
     ? value
     : "overview";
 };
@@ -164,6 +164,9 @@ function App() {
     api<{ available: boolean }>("/execution/status", { signal: controller.signal })
       .then((value) => { if (!controller.signal.aborted) setRunnerReady(value.available); })
       .catch(() => { if (!controller.signal.aborted) setRunnerReady(false); });
+    api<AiConnection>("/ai/status", { signal: controller.signal })
+      .then(value => { if (!controller.signal.aborted) setAiConnection(value); })
+      .catch(() => { if (!controller.signal.aborted) setAiConnection(null); });
     return () => controller.abort();
   }, [refreshKey]);
   const selected = snapshot?.projects.find(
@@ -207,7 +210,7 @@ function App() {
     setInstruction("");
   }, [selectedId]);
   useEffect(() => {
-    const onHash = () => setView(viewFromHash());
+    const onHash = () => { setView(viewFromHash()); window.scrollTo(0, 0); };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
@@ -221,6 +224,7 @@ function App() {
     const shortcut = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k" && !document.querySelector("dialog[open]")) {
         event.preventDefault();
+        document.getElementById("workspace-navigation")?.hidePopover();
         window.location.hash = "overview";
         window.setTimeout(() => document.getElementById("jarvis-command")?.focus(), 0);
       }
@@ -273,18 +277,21 @@ function App() {
   }
   const nav = [
     { id: "overview", label: "Overview", icon: "grid" },
+    { id: "workspace", label: "Workspace details", icon: "code" },
     { id: "projects", label: "Projects", icon: "folder" },
     { id: "history", label: "Task history", icon: "clock" },
     { id: "settings", label: "Settings", icon: "settings" },
   ] as const;
   const titles = {
     overview: "Good to see you.",
+    workspace: "Workspace details",
     projects: "Your projects",
     history: "Task history",
     settings: "Workspace settings",
   };
   const descriptions = {
     overview: "Your projects, your ideas, your next move. All in one workspace.",
+    workspace: "Your project, source, connections, progress and activity in one place.",
     projects:
       "Connect existing folders and keep every project in its own space.",
     history: "Every instruction has a place. Follow its status from here.",
@@ -389,10 +396,6 @@ function App() {
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h12M4 18h16" /></svg>
           </button>
           <a className="header-brand" href="#overview" aria-label="Jarvis home"><span className="brand-mark"><HoloIcon name="spark" size={22} /></span><span>JARVIS<small>AI Development Assistant</small></span></a>
-          <div className="breadcrumbs">
-            Workspace <span>/</span>{" "}
-            <strong>{nav.find((item) => item.id === view)?.label}</strong>
-          </div>
           <div className="topbar-actions">
             <span
               className={`connection ${error || !snapshot ? "offline" : ""}`}
@@ -417,7 +420,7 @@ function App() {
             </span>
           </div>
         </header>
-        <main className={view === "overview" ? "overview-main" : undefined}>
+        <main className={view === "overview" ? "overview-main" : view === "workspace" ? "workspace-main" : undefined}>
           {view !== "overview" && <div className="page-heading">
             <div>
               <p className="eyebrow">YOUR COMMAND CENTER</p>
@@ -469,7 +472,10 @@ function App() {
                     onTask={id => { const task = snapshot?.tasks.find(task => task.id === id); if (task) setActiveTask(task); }}
                     onWorkflow={() => openWorkflow()}
                   />
-                  <div className="workspace-detail-heading"><h2>Your workspace, in detail</h2><span>Connected to your local projects</span></div>
+                </>
+              )}
+              {view === "workspace" && (
+                <>
                   <div className="work-grid">
                     <div className="work-main">
                       <section className="panel project-panel">
@@ -784,13 +790,13 @@ function App() {
               )}
             </>
           )}
-          <footer className="page-footer">
+          {view !== "overview" && <footer className="page-footer">
             <span>
               <span className="tiny-dot" />
               Your workspace. Your machine.
             </span>
             <span>Build → Test → Verify → Commit → Continue</span>
-          </footer>
+          </footer>}
         </main>
       </div>
       {newProject && (
