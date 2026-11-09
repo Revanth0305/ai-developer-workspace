@@ -10,7 +10,7 @@ Updated: 2026-11-09 (Asia/Calcutta)
 | CP4: AI planning | Complete; user authorized CP5 | Reviewed context → live signed-in Codex → validated, stored project plan. 27 tests pass, including installed-binary compatibility. Live cancellation verified. |
 | CP5: Code execution | Complete for controlled Node.js 24 candidate scope; awaiting user review | 47 tests passed, including real Docker isolation; live failed check → reviewed repair → 2 passing tests, downloaded patch and cancellation; original source unchanged |
 | CP6: Managed-project Git automation | Complete for reviewed personal GitHub profile; awaiting user review | Final transport-fix build: 53 tests pass, zero failures/errors/skips. Real commit and GitHub push verified; original source unchanged |
-| CP7: Deployment | Not started | Local application only; no hosting target configured |
+| CP7: Deployment | Authorized; target selection pending | Reviewing a bounded test-deployment profile; no deployment result or hosting account is configured yet |
 | CP8: Autonomous workflow | Not started | Requires earlier execution and recovery milestones |
 
 ## Historical CP1–3 verification
@@ -38,7 +38,7 @@ Updated: 2026-11-09 (Asia/Calcutta)
 
 ## Next requirement
 
-CP6 final verification is complete. Report and stop before CP7. The requested holographic Jarvis UI and hover/tap pop-up navigation are implemented and verified; wait for user review before further milestone work. Stop work when remaining Codex usage quota reaches 10%. The platform repository remains Revanth0305/ai-developer-workspace. The user separately authorized public Revanth0305/ai-workspace-cp6-verification for the disposable managed-project verification, and restored GitHub CLI device sign-in. Do not infer new managed-project destinations from either repository. The restart handoff below is historical and resolved.
+CP6 is complete. The user authorized CP7 on 2026-11-09; finish and report it before CP8. Confirm the test-deployment destination/account before configuring any external hosting. The requested holographic Jarvis UI and hover/tap pop-up navigation are implemented and verified; wait for user review before further milestone work. Stop work when remaining Codex usage quota reaches 10%. The platform repository remains Revanth0305/ai-developer-workspace. The user separately authorized public Revanth0305/ai-workspace-cp6-verification for the disposable managed-project verification, and restored GitHub CLI device sign-in. Do not infer new managed-project destinations from either repository. The restart handoff below is historical and resolved.
 
 
 ## Destination review and Jarvis UI — 2026-11-08
@@ -127,3 +127,28 @@ CP6 final verification is complete. Report and stop before CP7. The requested ho
 - Connection status is fetched independently of the moved Codex panel so home remains accurate. Route changes reset the scroll position; in-memory command text survives navigation back to Jarvis. Ctrl+K closes navigation and returns to the command bar.
 - Frontend type checking/production build passed. Browser verified direct/reloaded #workspace routing, README preview, widget/menu navigation and preserved command text. At 1440x1000 the overview height is exactly the viewport height, contains five widgets and zero operational panels/breadcrumbs. At 390px both pages have matching document/client widths and no horizontal overflow.
 - Updated proof images are ignored .runtime/jarvis-overview-focused.png and .runtime/workspace-details-desktop.png. Existing backend code and managed-source files were untouched. CP7 remains unstarted.
+
+## CP7 started - 2026-11-09
+
+- User authorized the deployment milestone after CP6 and the UI updates. The platform branch was clean and synchronized before starting. Initial quota check: 54% primary / 64% secondary; retain the stop-at-10% rule.
+- CP7 concerns deployment of a tested managed project. Jarvis itself remains a local, single-user control plane. The user selected installed local Docker test deployment. No hosting account or external publication is required.
+- Required flow: select project/target, review the exact tested commit and deployment settings, explicitly start deployment, persist provider/deployment IDs and bounded logs, verify the actual live URL/result, retain failure details and support reviewed stop/recovery. No fabricated deployment success, automatic paid provisioning, unrelated source changes or inferred accounts.
+- Implementation and automated verification are in progress for the fixed static Node.js 24 Docker profile; full dashboard/live verification remains pending. Keep the overview focused and put operational deployment controls with the existing reviewed task workflow/Workspace Details. CP8 remains unstarted.
+
+
+## CP7 live verification and continuation - 2026-11-09
+
+- Implemented opt-in local Docker static deployment from an immutable passing private commit, exact artifact/image review, owned resource labels, actual HTTP verification, bounded logs/resources, stop/cancel, cleanup retry, persisted history and 30-minute expiry. Details and limits are in README. No cloud deployment or new external account connection was added. CP8 is unstarted; journey remains 6/8 until final validation/restart proof.
+- Initial full run passed 66 tests, zero failures/errors/skips (installed Codex and real Docker enabled). Follow-up final validation runs overlapped accidentally and failed writing shared Gradle result files (EOF/missing result file), so their results do not count as passes. A fresh sequential Build-Workspace.ps1 -SkipInstall run is in progress; inspect its final output and latest XML before claiming completion. Servers were stopped before this run.
+- Real browser workflow: project 372facbc-108b-419a-b24a-f445295247de, task 07c4af82-f3b1-411f-95b4-6611ca617de6, execution f5a39c90-8feb-445a-8a80-6026e2c3324d. Reviewed real Codex proposal, three tests passed, private commit 3e4758b4fafe3249bf281bed27fba6ddabbd54d2, parent 7d4775c2b8ef3f01acf61a981b2a1d2500513e1f. No verification-project push was made or required.
+- First deployment became LIVE but the scheduled health check rejected a database-truncated expiry timestamp and cleaned it up truthfully as FAILED. Fixed expiry precision to milliseconds and added a persistence comparison regression assertion. Second deployment def538ff-9a79-49dc-9bd6-e327cec85b06 remained LIVE at http://127.0.0.1:50649/, served the reviewed static files, returned Hello, Ada! and rejected whitespace-only names in the browser. Explicit Stop persisted STOPPED, cleanupPending=false, blank URL; Docker lists no owned deployment container. Proof: ignored .runtime/cp7-deployment-proof.json and cp7-deployed-site.png.
+- All six original source hashes match .runtime/cp7-source-before.json and original Git status is clean. Disposable source: parent Automation/.java-tmp/cp7-static-verification-20261109. Preserve it and ignored .runtime/cp5-verification-data database and private publication/candidate directories for continuation.
+- Remaining: finish the sequential full validation; start the preserved database with execution/Git/deployment flags; third (last allowed) reviewed deployment; verify it survives Stop-Workspace/Start-Workspace with HTTP/ownership revalidation; mobile deployment controls and Workspace Details summary; update journey to 7/8 only after success; update final documentation, commit and push platform branch codex/workspace-foundation to approved Revanth0305/ai-developer-workspace. Stop for review before CP8. Last quota check 12% primary / 57% secondary; stop at 10%.
+
+
+## CP7 completed - 2026-11-09
+
+- Resumed with replenished quota. The final sequential build completed at 15:28 IST: all 66 tests passed with zero failures/errors/skips, including the saved-expiry regression, installed Codex and real Docker compatibility checks. This supersedes the overlapping-run failures above.
+- Docker Desktop was stopped after the break; restarted the installed runtime. Third deployment used the same reviewed passing private commit and became LIVE at http://127.0.0.1:63027/. A normal Stop-Workspace/Start-Workspace cycle retained LIVE, cleanupPending=false, exact artifact/commit and actual HTTP health. Browser verified the deployed page during restart and Hello, Revanth! afterward. Lease ends 21:14:57 IST; this temporary URL is not persistent hosting.
+- Workspace Details shows real LIVE/STOPPED/FAILED deployment history and opens the corresponding task. Desktop deployment controls verified. Mobile viewport override did not take effect in the current browser session (actual width stayed 1280), so this session does not claim a new 390px verification; existing responsive styles remain and a future mobile check is advisable. Ignored proof: cp7-restart-proof.json, cp7-recovered-dashboard.png, cp7-recovered-site.png under .runtime.
+- Journey is 7/8. Static-only deployment scope and limits are recorded in README/PROJECT_SPEC. No managed-project source application or additional remote push occurred. Latest user instruction explicitly authorizes continuing through CP8 without another milestone approval, while reporting checkpoints and stopping at 10% quota. New-project repository provisioning and hosted visual preview remain deferred as discussed.

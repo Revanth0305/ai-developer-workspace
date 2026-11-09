@@ -4,7 +4,7 @@ A local React + TypeScript and Spring Boot platform for managing development pro
 
 ## Current version
 
-Phases 1–6 are implemented for the current bounded scope: the holographic Jarvis dashboard, project registration/settings, tasks/history, source previews, reviewed Codex planning, isolated Node.js 24 candidates and separately reviewed personal GitHub publishing. Original managed folders stay unchanged. Deployment remains a later milestone.
+Phases 1–7 are implemented for the current bounded scope: the holographic Jarvis dashboard, project registration/settings, tasks/history, source previews, reviewed Codex planning, isolated Node.js 24 candidates and separately reviewed personal GitHub publishing. Original managed folders stay unchanged. Reviewed local Docker static deployment is available.
 
 ## Holographic command center
 
@@ -117,7 +117,7 @@ This optional test uses a synthetic local provider, verifies that the model rece
 
 Tested App Server: `0.167.0-alpha.3.2`. Revalidate compatibility after CLI updates. See [official App Server documentation](https://learn.chatgpt.com/docs/app-server) and [current specification](documentation/PROJECT_SPEC.md).
 
-CP6 is complete for the reviewed personal GitHub profile. Wait for user review before CP7 deployment.
+CP7 is complete for the reviewed local Docker static profile. See the progress tracker for evidence and remaining scope.
 
 
 ## CP5 controlled candidates and checks
@@ -142,3 +142,14 @@ Execution remains disabled by default. To include both runtime compatibility che
 Opt in with `WORKSPACE_GIT_ENABLED=true` before Start-Workspace.ps1 and sign in to the selected personal account using GitHub CLI. For a passing candidate, **Commit & GitHub** asks for the account, existing repository, author and message. Review the exact commit diff and destination, then commit locally. A separate confirmation publishes that saved commit to its dedicated `codex/task-...` branch and verifies the remote commit ID. Repository creation remains an explicit setup step outside the dashboard.
 
 The commit preserves the original parent history and unchanged files, including files outside the bounded text snapshot. The original managed folder, index, branch and remotes are not modified. Publishing includes the original Git history: inspect it and the destination visibility before confirming. The initial profile supports personal GitHub HTTPS repositories, up to 50 MB of reachable history, and one fixed destination per committed candidate. No tokens are stored in application data, no hooks are executed, and no force push is used. A conflicting destination branch is rejected. Unconfirmed/interrupted pushes retain PUSH_UNKNOWN and can be explicitly reconciled against the exact remote branch. Private commit artifacts and publication records stay local to each laptop; push before switching computers.
+
+
+## Local Docker test deployment (CP7)
+
+Enable `WORKSPACE_EXECUTION_ENABLED=true`, `WORKSPACE_GIT_ENABLED=true` and `WORKSPACE_DEPLOYMENT_ENABLED=true` before starting with `scripts/Start-Workspace.ps1`. Deployment is disabled by default. Docker Desktop must be running with the official `node:24-alpine` image prepared. Codex is needed only for planning/proposals; deployment does not make a model request.
+
+In **Code & checks**, use a passing, cleaned candidate, review and commit it locally, then select **Review local deployment**. Review the exact commit, artifact manifest, image ID and localhost target. Confirm the public assets before starting. A GitHub push is not required. The initial static profile serves committed `public/index.html` and supported HTML, CSS, JS/MJS, JSON and text assets, limited to 100 files, 64 KB per file and 2 MB total. Use separate scripts/styles: strict browser policy blocks inline scripts/styles and external requests. No packages, user environment variables, credentials, arbitrary servers, backend services or cloud hosting are supported. Credential detection is heuristic; inspect the public content yourself.
+
+The trusted static server runs from a pinned image ID as an unprivileged user, with read-only root/source, no host mounts, dropped capabilities, no-new-privileges, 128 MB RAM, half a CPU and 64 processes. Docker bridge networking supports HTTP; only a Docker-assigned **127.0.0.1** port is published. Unlike candidate checks, this deployment profile does not use network=none. The trusted server imports no project server code. The dashboard reports LIVE and a URL only after ownership, isolation, copied-artifact fingerprint and actual HTTP health checks succeed.
+
+One deployment can run at a time, with up to three attempts per candidate and a 30-minute lease. Stop/cancel and bounded logs are available in the task; Workspace Details summarizes saved results. Cleanup removes only labelled owned resources. Failed cleanup remains pending and blocks a new launch. Jarvis restart re-verifies an existing live deployment rather than redeploying it. The server enforces expiry while Jarvis is stopped; owned-resource cleanup resumes when Jarvis is running. Deployment volumes, database records and private commits remain local to each laptop. CP8 requires separate user review.

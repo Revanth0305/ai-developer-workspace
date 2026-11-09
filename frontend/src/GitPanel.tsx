@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import DeploymentPanel from "./DeploymentPanel";
 
 type Publication = { id: string; status: string; account: string; repository: string; branch: string; baseCommit: string; treeId: string; commitId: string; authorName: string; authorEmail: string; message: string; diff: string; reviewHash: string; pushHash: string; error: string };
 async function api<T>(id: string, action = "", body?: unknown): Promise<T> {
@@ -39,5 +40,6 @@ export default function GitPanel({ id }: { id: string }) {
       {publication.status === "PUSHED" && <a className="button secondary" href={`https://github.com/${publication.account}/${publication.repository}/commit/${publication.commitId}`} target="_blank" rel="noreferrer">View verified GitHub commit</a>}
     </>}
     {busy && <p role="status" className="source-note">Git operation in progress. Results are recorded; if the connection is interrupted, reopen this candidate before retrying.</p>}
+    {publication && ["COMMITTED", "PUSHED", "PUSH_UNKNOWN"].includes(publication.status) && <DeploymentPanel key={id} executionId={id} />}
   </section>;
 }

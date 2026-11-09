@@ -4,7 +4,7 @@
 
 Provide a personal local interface for separate development repositories, project-specific instructions, reviewed AI planning, and later controlled edits, verification, Git automation and test deployments.
 
-## Implemented architecture (CP1–6)
+## Implemented architecture (CP1–7)
 
 - Frontend: React, TypeScript, Vite, a responsive SVG/CSS holographic Jarvis command center and a hover/tap navigation popover. No permanent side rail or added frontend dependencies. The overview contains only Jarvis, its command bar and quick actions; operational project/source/connection/progress/activity/instruction panels render on a separate #workspace route.
 - Backend: Spring Boot / Java 21, validation and loopback Host/Origin guards.
@@ -53,3 +53,10 @@ CP6 is complete for the reviewed personal GitHub profile; final validation passe
 Commit and push are separate explicit actions. The initial destination profile is an existing personal GitHub HTTPS repository; the locally signed-in CLI account must match the selected account. A fixed official CLI helper supplies credentials without storing them in the database. Push is non-force, rejects conflicting branch contents, and verifies the remote ID before reporting PUSHED. Records retain commit, branch, destination and status; interrupted or unconfirmed network writes become PUSH_UNKNOWN for explicit reconciliation, never fabricated success. An interrupted local commit is retained for review and never automatically pushed.
 
 Pushing publishes the original repository history as well as the checked change. The UI requires reviewing destination visibility/history. Repository provisioning, original-folder application, merges, pull requests, organizations/GitLab, deployment (CP7) and unattended workflows (CP8) are outside this initial profile. Stop for user review after CP6 verification before CP7.
+
+
+## CP7 local test deployment
+
+Implemented and live-verified for committed static public/ assets with the fixed Node.js 24 Docker profile. WORKSPACE_DEPLOYMENT_ENABLED defaults false; execution and Git profiles are also required to prepare eligible candidates. Only clean passing candidates with private commits qualify. Review binds commit/tree, artifact fingerprint/manifest, image ID and localhost policy. No push is required. The trusted packaged static server imports no project server code and verifies copied bytes before listening.
+
+The server publishes a Docker-assigned loopback port, uses bridge networking, read-only root/volume, UID 65534, no host binds, dropped capabilities and bounded resources/logs. Strict CSP requires separate scripts/styles and blocks browser external connections. No user secrets or arbitrary environment variables are accepted. There is one live deployment, three attempts per candidate, and a 30-minute server-enforced lease. Actual isolation/ownership and HTTP checks gate the saved URL. Stop/cancel, pending owned cleanup, expiry and restart recovery preserve truthful history; restart never automatically redeploys. README specifies artifact limits and operational steps. Cloud CI/CD, arbitrary application backends and hosted Jarvis remain outside this profile.

@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from "react";
 import "./App.css";
 import ExecutionPanel from "./ExecutionPanel";
 import HolographicOverview, { HoloIcon } from "./HolographicOverview";
+import { DeploymentSummary } from "./DeploymentPanel";
 
 type Project = {
   id: string;
@@ -138,6 +139,7 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
 function App() {
   const [aiConnection, setAiConnection] = useState<AiConnection | null>(null);
   const [runnerReady, setRunnerReady] = useState(false);
+  const [deploymentEnabled, setDeploymentEnabled] = useState(false);
   const [view, setView] = useState<View>(viewFromHash);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [selectedId, setSelectedId] = useState(
@@ -167,6 +169,9 @@ function App() {
     api<AiConnection>("/ai/status", { signal: controller.signal })
       .then(value => { if (!controller.signal.aborted) setAiConnection(value); })
       .catch(() => { if (!controller.signal.aborted) setAiConnection(null); });
+    api<{ enabled: boolean }>("/deployment/status", { signal: controller.signal })
+      .then(value => { if (!controller.signal.aborted) setDeploymentEnabled(value.enabled); })
+      .catch(() => { if (!controller.signal.aborted) setDeploymentEnabled(false); });
     return () => controller.abort();
   }, [refreshKey]);
   const selected = snapshot?.projects.find(
@@ -543,10 +548,11 @@ function App() {
                     </div>
                     <div className="work-aside">
                       <CodexStatus onChange={setAiConnection} />
+                      {selected && <DeploymentSummary key={selected.id} projectId={selected.id} onOpen={id => { const task = snapshot?.tasks.find(task => task.id === id); if (task) setActiveTask(task, "execution"); }} />}
                       <section className="panel">
                         <div className="panel-heading">
                           <h2>Development journey</h2>
-                          <span className="badge neutral">6 / 8</span>
+                          <span className="badge neutral">7 / 8</span>
                         </div>
                         <ol className="journey">
                           {[
@@ -562,11 +568,11 @@ function App() {
                             <li
                               key={label}
                               className={
-                                index < 6 ? "done" : index === 6 ? "next" : ""
+                                index < 7 ? "done" : index === 7 ? "next" : ""
                               }
                             >
                               <span className="journey-step">
-                                {index < 6 ? (
+                                {index < 7 ? (
                                   <Icon name="check" size={13} />
                                 ) : (
                                   index + 1
@@ -574,11 +580,11 @@ function App() {
                               </span>
                               <span>
                                 {label}
-                                {index === 6 && (
+                                {index === 7 && (
                                   <small>Awaiting your milestone review</small>
                                 )}
                               </span>
-                              {index === 6 && (
+                              {index === 7 && (
                                 <span className="next-label">NEXT</span>
                               )}
                             </li>
@@ -769,7 +775,7 @@ function App() {
                       ["AI provider", aiConnection?.authenticated ? "Codex · connected" : "Codex · not connected"],
                       ["Code execution", runnerReady ? "Isolated Node.js 24 tests" : "Runner not connected"],
                       ["Private commits & GitHub", "Reviewed · opt-in"],
-                      ["Deployment", "Not enabled"],
+                      ["Deployment", deploymentEnabled ? "Local Docker static sites" : "Disabled for this session"],
                     ].map(([label, value], index) => (
                       <div key={label} className="capability">
                         <span>{label}</span>
@@ -783,7 +789,7 @@ function App() {
                     <p className="settings-note">
                       The service listens on your computer's loopback address.
                       Codex uses your local sign-in. Review each request before sending
-                      it. Containerized checks require a connected runner. Git publishing requires a separate reviewed commit and confirmed destination. Deployment remains a later milestone.
+                      it. Containerized checks require a connected runner. Git publishing requires a separate reviewed commit and confirmed destination. Local deployment requires a checked private commit, reviewed public assets and a separate deployment confirmation.
                     </p>
                   </section>
                 </div>

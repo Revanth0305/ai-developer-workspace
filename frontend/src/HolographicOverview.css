@@ -151,3 +151,11 @@ body:has(.holographic-shell) { background: #060b19; }
 /* The landing page ends with its quick actions; operational details have their own route. */
 .holographic-shell .header-brand { margin-right: auto; }
 .holographic-shell .workspace-main .work-grid { border-top: 0; padding-top: 0; margin-top: 0; }
+
+.deployment-panel { border-top: 1px solid #526e9640; padding-top: 20px; }
+.deployment-panel h3 { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.deployment-panel .field-label { margin-top: 15px; }
+.deployment-confirm { display: flex; align-items: flex-start; gap: 10px; line-height: 1.8; }
+.deployment-confirm input { width: 16px; height: 16px; padding: 0; margin-top: 4px; flex-shrink: 0; }
+.deployment-summary-row { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 0; background: none; border: 0; border-top: 1px solid #526e9630; color: #b3cce9; text-align: left; font-size: 10px; }
+.deployment-summary-row small { display: block; color: #93a6c7; margin-top: 5px; }
