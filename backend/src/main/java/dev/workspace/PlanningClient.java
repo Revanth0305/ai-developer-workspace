@@ -10,6 +10,9 @@ public interface PlanningClient extends AutoCloseable {
     JsonNode request(String method, Object params) throws Exception;
     void prepare(Path cwd) throws Exception;
     String plan(String prompt, Path cwd, Duration timeout) throws Exception;
+    default String propose(String prompt, Path cwd, Duration timeout) throws Exception {
+        throw new UnsupportedOperationException("Change proposals are not supported by this transport");
+    }
     String threadId();
     void interrupt();
     @Override void close();

@@ -1603,3 +1603,16 @@ input::placeholder, textarea::placeholder { color: #91a4bf; }
 
 .modal { background: #111c2e; color: #e5edf9; border: 1px solid #2c415c; }
 .modal::backdrop { background: #030812b8; backdrop-filter: blur(6px); }
+/* Candidate execution review */
+.instruction-views, .execution-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
+.instruction-views button[aria-pressed="true"] { background: #234b5d; border-color: #5cbed0; color: #cff8ff; }
+.execution-panel { border-top: 1px solid var(--line); padding-top: 22px; margin-top: 18px; }
+.runner-state { padding: 15px; border: 1px solid #2b495e; border-radius: 11px; background: #112737; margin: 18px 0; }
+.runner-state strong { font-size: 12px; color: #aee8ef; }
+.runner-state p, .runner-state code { display: block; font-size: 11px; line-height: 1.8; margin: 8px 0; color: #adbed4; overflow-wrap: anywhere; }
+.candidate-result { margin-top: 22px; }
+.candidate-diff, .check-logs { padding: 16px; background: #0b1625; color: #d1e3ee; border: 1px solid var(--line); border-radius: 10px; font-size: 11px; line-height: 1.8; max-height: 360px; white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; }
+.execution-panel summary { font-size: 12px; color: #a7ddeb; cursor: pointer; line-height: 1.8; }
+.execution-panel textarea { margin-bottom: 14px; }
+.modal:has(.execution-panel) { width: min(900px, calc(100vw - 28px)); }
+.execution-actions .button { white-space: normal; }

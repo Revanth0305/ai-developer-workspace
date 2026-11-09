@@ -14,7 +14,7 @@ import java.util.*;
 public class WorkspaceFiles {
     private final Path platformRoot;
     private static final Set<String> EXCLUDED = Set.of("node_modules", "build", "dist", "target", "vendor", "coverage", "__pycache__");
-    private static final Set<String> EXTENSIONS = Set.of("java", "ts", "tsx", "js", "jsx", "json", "md", "css", "html", "xml", "gradle", "yml", "yaml", "properties", "txt", "py", "sql");
+    private static final Set<String> EXTENSIONS = Set.of("java", "ts", "tsx", "js", "jsx", "mjs", "cjs", "json", "md", "css", "html", "xml", "gradle", "yml", "yaml", "properties", "txt", "py", "sql");
 
     public WorkspaceFiles(@Value("${workspace.platform-root}") String platformRoot) throws IOException {
         this.platformRoot = Path.of(platformRoot).toRealPath();
@@ -94,6 +94,13 @@ public class WorkspaceFiles {
     }
 
     private boolean blocked(String name) { return name.startsWith(".") || EXCLUDED.contains(name.toLowerCase(Locale.ROOT)); }
+    public boolean sourcePath(String name) {
+        try {
+            if (name == null || name.isBlank() || name.length() > 2048 || name.contains(":") || name.chars().anyMatch(c -> c < 32)) return false;
+            Path path=Path.of(name.replace('\\','/'));
+            return !path.isAbsolute() && allowed(path);
+        } catch (InvalidPathException e) { return false; }
+    }
     private boolean allowed(Path relative) {
         for (Path part : relative) if (blocked(part.toString()) || part.toString().equals("..")) return false;
         String name = relative.getFileName().toString().toLowerCase(Locale.ROOT);

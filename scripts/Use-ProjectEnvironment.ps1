@@ -16,3 +16,17 @@ if (-not $env:WORKSPACE_CODEX_EXECUTABLE) {
     $codexCommand = Get-Command codex.exe -ErrorAction SilentlyContinue
     if ($codexCommand) { $env:WORKSPACE_CODEX_EXECUTABLE = $codexCommand.Source }
 }
+
+if (-not $env:WORKSPACE_DOCKER_EXECUTABLE) {
+    $dockerCommand = Get-Command docker.exe -ErrorAction SilentlyContinue
+    if ($dockerCommand) { $env:WORKSPACE_DOCKER_EXECUTABLE = $dockerCommand.Source }
+    else {
+        $dockerCandidates = @(
+            (Join-Path $env:ProgramFiles 'Docker\Docker\resources\bin\docker.exe'),
+            (Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker.exe')
+        )
+        foreach ($dockerCandidate in $dockerCandidates) {
+            if (Test-Path -LiteralPath $dockerCandidate) { $env:WORKSPACE_DOCKER_EXECUTABLE = $dockerCandidate; break }
+        }
+    }
+}

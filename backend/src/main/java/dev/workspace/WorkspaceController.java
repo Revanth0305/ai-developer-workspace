@@ -21,9 +21,11 @@ public class WorkspaceController {
     private final CodexPlanner codex;
     private final PlanContext context;
     private final PlanAttemptRepository attempts;
-    public WorkspaceController(ProjectRepository projects, TaskRepository tasks, ActivityRepository activity, WorkspaceFiles files, GitInspector git, CodexPlanner codex, PlanContext context, PlanAttemptRepository attempts) {
+    private final DockerSandbox sandbox;
+    public WorkspaceController(ProjectRepository projects, TaskRepository tasks, ActivityRepository activity, WorkspaceFiles files, GitInspector git, CodexPlanner codex, PlanContext context, PlanAttemptRepository attempts, DockerSandbox sandbox) {
         this.projects = projects; this.tasks = tasks; this.activity = activity; this.files = files; this.git = git;
         this.codex = codex; this.context = context; this.attempts = attempts;
+        this.sandbox = sandbox;
     }
     public record ProjectInput(@NotBlank @Size(max=100) String name, @NotBlank @Size(max=2048) String directory, @Size(max=8000) String instructions) {}
     public record SettingsInput(@NotBlank @Size(max=100) String name, @Size(max=8000) String instructions) {}
@@ -32,7 +34,7 @@ public class WorkspaceController {
     public record PlanInput(@Size(max=8) List<@NotBlank @Size(max=2048) String> files, @NotBlank @Size(max=64) String contextHash) {}
 
     @GetMapping("/health") public Map<String, Object> health() {
-        return Map.of("status", "UP", "application", "AI Developer Workspace", "time", Instant.now(), "aiProvider", "codex", "aiConfigured", codex.snapshot().authenticated(), "executionEnabled", false);
+        return Map.of("status", "UP", "application", "AI Developer Workspace", "time", Instant.now(), "aiProvider", "codex", "aiConfigured", codex.snapshot().authenticated(), "executionEnabled", sandbox.enabled());
     }
     @GetMapping("/ai/status") public CodexPlanner.ConnectionStatus aiStatus() { return codex.status(); }
     @PostMapping("/ai/status/refresh") public CodexPlanner.ConnectionStatus refreshAiStatus() { return codex.refreshStatus(); }

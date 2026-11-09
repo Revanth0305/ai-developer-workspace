@@ -112,3 +112,8 @@ This optional test uses a synthetic local provider, verifies that the model rece
 Tested App Server: `0.167.0-alpha.3.2`. Revalidate compatibility after CLI updates. See [official App Server documentation](https://learn.chatgpt.com/docs/app-server) and [current specification](documentation/PROJECT_SPEC.md).
 
 CP4 is the review checkpoint. Wait for user approval before implementing CP5 controlled execution.
+
+
+## CP5 work in progress
+
+The new **Code & checks** view prepares isolated file candidates and reviewed container checks. CP5 is not yet complete: this Windows computer requires a restart to activate Docker's VirtualMachinePlatform prerequisite before real execution validation. See [restart handoff](documentation/CP5_RESTART_HANDOFF.md). Controlled execution remains disabled by default; no original managed-project files are modified by this candidate workflow.

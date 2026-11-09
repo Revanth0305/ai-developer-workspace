@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import "./App.css";
+import ExecutionPanel from "./ExecutionPanel";
 
 type Project = {
   id: string;
@@ -135,6 +136,7 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
 
 function App() {
   const [aiConnection, setAiConnection] = useState<AiConnection | null>(null);
+  const [runnerReady, setRunnerReady] = useState(false);
   const [view, setView] = useState<View>(viewFromHash);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [selectedId, setSelectedId] = useState(
@@ -148,8 +150,17 @@ function App() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [taskPane, setTaskPane] = useState<"plan" | "execution">("plan");
+  useEffect(() => { setTaskPane("plan"); }, [activeTask?.id]);
   const [refreshKey, setRefreshKey] = useState(0);
   const requestId = useRef(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    api<{ available: boolean }>("/execution/status", { signal: controller.signal })
+      .then((value) => { if (!controller.signal.aborted) setRunnerReady(value.available); })
+      .catch(() => { if (!controller.signal.aborted) setRunnerReady(false); });
+    return () => controller.abort();
+  }, [refreshKey]);
   const selected = snapshot?.projects.find(
     (project) => project.id === selectedId,
   );
@@ -440,7 +451,7 @@ function App() {
                     <Stat
                       icon="shield"
                       label="Execution mode"
-                      value="Read only"
+                      value={runnerReady ? "Isolated tests" : "Read only"}
                       detail={aiConnection?.authenticated ? "Codex planning connected" : "Codex planning not connected"}
                     />
                   </section>
@@ -612,7 +623,7 @@ function App() {
                               <span>
                                 {label}
                                 {index === 4 && (
-                                  <small>Awaiting your milestone review</small>
+                                  <small>Controlled execution in development</small>
                                 )}
                               </span>
                               {index === 4 && (
@@ -804,7 +815,7 @@ function App() {
                       ["Local persistence", "Enabled"],
                       ["Git & source inspection", "Read only"],
                       ["AI provider", aiConnection?.authenticated ? "Codex · connected" : "Codex · not connected"],
-                      ["Code execution", "Not enabled"],
+                      ["Code execution", runnerReady ? "Isolated Node.js 24 tests" : "Runner not connected"],
                       ["Push & deployment", "Not enabled"],
                     ].map(([label, value], index) => (
                       <div key={label} className="capability">
@@ -819,7 +830,7 @@ function App() {
                     <p className="settings-note">
                       The service listens on your computer's loopback address.
                       Codex uses your local sign-in. Review each request before sending
-                      it. Code execution, push and deployment are separate milestones.
+                      it. Containerized checks require a connected runner. Push and deployment are separate milestones.
                     </p>
                   </section>
                 </div>
@@ -848,7 +859,7 @@ function App() {
         />
       )}
       {activeTask && (
-        <Modal title="Instruction & plan" onClose={() => setActiveTask(null)}>
+        <Modal title="Instruction workspace" onClose={() => setActiveTask(null)}>
           <div className="task-detail-meta">
             <span
               className={`badge ${activeTask.status === "DRAFT" ? "purple" : "neutral"}`}
@@ -863,13 +874,17 @@ function App() {
             )?.name || "Project"}
           </h3>
           <pre className="task-instruction">{activeTask.instruction}</pre>
-          <PlanningPanel
+          <div className="instruction-views" role="group" aria-label="Instruction views">
+            <button type="button" className="button secondary" aria-pressed={taskPane === "plan"} onClick={() => setTaskPane("plan")}>Plan & context</button>
+            <button type="button" className="button secondary" aria-pressed={taskPane === "execution"} onClick={() => setTaskPane("execution")}>Code & checks</button>
+          </div>
+          {taskPane === "plan" ? <PlanningPanel
             key={activeTask.id}
             task={activeTask}
             project={snapshot?.projects.find((project) => project.id === activeTask.projectId)}
             onUpdate={(task) => { setActiveTask(task); void refresh(); }}
-          />
-          {(activeTask.status === "DRAFT" || activeTask.status === "PLANNING") && (
+          /> : <ExecutionPanel taskId={activeTask.id} projectId={activeTask.projectId} taskStatus={activeTask.status} onChanged={() => void refresh()} />}
+          {taskPane === "plan" && (activeTask.status === "DRAFT" || activeTask.status === "PLANNING") && (
             <button
               className="button secondary"
               disabled={saving}

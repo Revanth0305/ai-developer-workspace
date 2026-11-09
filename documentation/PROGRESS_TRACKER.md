@@ -1,14 +1,14 @@
 # Progress tracker
 
-Updated: 2026-11-08 (Asia/Calcutta)
+Updated: 2026-11-09 (Asia/Calcutta)
 
 | Checkpoint | Status | Evidence |
 | --- | --- | --- |
 | CP1: Foundation | Complete | React/TypeScript production build; Spring Boot executable JAR; live /api/health through the frontend proxy |
 | CP2: Dashboard | Complete | Browser-verified registration, project details, source preview, saved draft, settings, history and cancellation |
 | CP3: Project management | Complete for read-only scope | Two-project isolation API test; canonical folder checks; overlap/platform/traversal rejection; scoped Git inspection |
-| CP4: AI planning | Complete; awaiting user review | Reviewed context → live signed-in Codex → validated, stored project plan. 27 tests pass, including installed-binary compatibility. Live cancellation verified. |
-| CP5: Code execution | Not started; awaiting CP4 review | Requires an isolated executor, reviewed diffs, bounded commands and recovery |
+| CP4: AI planning | Complete; user authorized CP5 | Reviewed context → live signed-in Codex → validated, stored project plan. 27 tests pass, including installed-binary compatibility. Live cancellation verified. |
+| CP5: Code execution | In progress; Windows restart required before live Docker validation | Candidate proposals, diff review, bounded checks and repair flow implemented; container end-to-end verification is pending |
 | CP6: Managed-project Git automation | Not started | Current Git integration is inspection only |
 | CP7: Deployment | Not started | Local application only; no hosting target configured |
 | CP8: Autonomous workflow | Not started | Requires earlier execution and recovery milestones |
@@ -38,7 +38,7 @@ Updated: 2026-11-08 (Asia/Calcutta)
 
 ## Next requirement
 
-CP4 is the current review checkpoint. Report the milestone and wait for the user to review and authorize CP5. The user also requests stopping work when the remaining Codex usage quota reaches 10%. The selected platform repository is the public GitHub repository Revanth0305/ai-developer-workspace; do not change the account or repository without asking.
+The user authorized CP5 on 2026-11-09. Resume from documentation/CP5_RESTART_HANDOFF.md after Windows restarts, finish live Docker validation, and report CP5 before proceeding to CP6. The user also requests stopping work when the remaining Codex usage quota reaches 10%. The selected platform repository is the public GitHub repository Revanth0305/ai-developer-workspace; do not change the account or repository without asking.
 
 
 ## Destination review and Jarvis UI — 2026-11-08
@@ -69,3 +69,15 @@ CP4 is the current review checkpoint. Report the milestone and wait for the user
 - Stop here for user review. CP5–8 remain unimplemented; publication of the platform source does not constitute CP6 managed-project Git automation.
 
 - Restart verification: after stopping and restarting the final backend against the same verification database, browser history retained both the PLANNED result and CANCELLED task. Reopening the planned instruction displayed its original stored result. At 390px, both document and planning-dialog widths stayed within the viewport with no horizontal overflow.
+
+
+## CP5 progress and restart handoff — 2026-11-09
+
+- User authorized CP5 and installation of Docker Desktop. The platform branch was clean and synchronized with origin before work began.
+- Implemented opt-in file proposals restricted to reviewed paths, independent bounded Git candidate snapshots, diff review, fixed dependency-free Node.js 24 checks, bounded logs/time/CPU/memory/processes, cancellation, limited retries/repair proposals, patch download and restart recovery. The original managed project is not modified. No managed-project commit/push/deployment was added.
+- The runner copies source into a private Docker volume, never mounts host folders or credentials, uses read-only source/root, an unprivileged UID, no network, dropped capabilities and no-new-privileges. Image IDs are pinned at review/run time. Actual Docker isolation and execution are NOT yet live-verified on this laptop.
+- Added tests for candidate/source boundaries, Git clean-filter suppression, CRLF handling, subprocess output/time limits, container policy/ownership checks and execution lifecycle. The real Docker compatibility test is opt-in and must be run after the engine is available.
+- Installed Docker Desktop 4.98.0 (Docker CLI 29.9.2) and Microsoft WSL 2.7.14. User completed Docker first-run setup. Administrator setup enabled VirtualMachinePlatform and explicitly reported that changes require a Windows reboot. No automatic reboot was performed.
+- CP5 is not complete. Preserve the in-progress work and follow CP5_RESTART_HANDOFF.md after restart. The user requested keeping this restart process simple.
+
+- Pre-restart checkpoint validation: frontend production build/type checking and backend JAR build passed; 46 tests passed, 0 failures, 0 errors, 1 skipped (the opt-in real Docker test). Project servers were stopped cleanly before reboot. Real Docker and browser end-to-end checks remain pending.
