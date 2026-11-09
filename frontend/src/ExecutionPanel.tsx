@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import GitPanel from "./GitPanel";
+import WorkflowPanel from "./WorkflowPanel";
 
 type Runner = { enabled: boolean; available: boolean; profile: string; imageId: string; message: string };
 type Preview = { hash: string; prompt: string; files: string[]; newFiles: string[]; repairOf: string | null; baseCommit: string; profile: string };
@@ -167,5 +168,6 @@ export default function ExecutionPanel({ taskId, projectId, taskStatus, onChange
       <pre className="context-preview" tabIndex={0}>{preview.prompt}</pre>
       <button type="button" className="button primary" disabled={busy || active} onClick={() => void propose()}>Request reviewed file proposal from Codex</button>
     </div>}
+    <WorkflowPanel taskId={taskId} selection={preview && !preview.repairOf ? { files: preview.files, newFiles: preview.newFiles, hash: preview.hash } : null} onSelect={setSelectedId} />
   </section>;
 }

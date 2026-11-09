@@ -217,6 +217,7 @@ public class ExecutionService {
         return attempt.diff;
     }
     public List<ExecutionAttempt> list(UUID taskId) { task(taskId);return attempts.findByTaskIdOrderByCreatedAtDesc(taskId); }
+    public synchronized boolean busy() { return active!=null; }
     @EventListener(ApplicationReadyEvent.class) public synchronized void recover() {
         for(ExecutionAttempt attempt:attempts.findAll()) {
             boolean interrupted=Set.of("GENERATING","CHECKING").contains(attempt.status);

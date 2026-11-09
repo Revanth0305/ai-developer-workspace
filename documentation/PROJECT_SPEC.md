@@ -4,7 +4,7 @@
 
 Provide a personal local interface for separate development repositories, project-specific instructions, reviewed AI planning, and later controlled edits, verification, Git automation and test deployments.
 
-## Implemented architecture (CP1–7)
+## Implemented architecture (CP1–8)
 
 - Frontend: React, TypeScript, Vite, a responsive SVG/CSS holographic Jarvis command center and a hover/tap navigation popover. No permanent side rail or added frontend dependencies. The overview contains only Jarvis, its command bar and quick actions; operational project/source/connection/progress/activity/instruction panels render on a separate #workspace route.
 - Backend: Spring Boot / Java 21, validation and loopback Host/Origin guards.
@@ -60,3 +60,12 @@ Pushing publishes the original repository history as well as the checked change.
 Implemented and live-verified for committed static public/ assets with the fixed Node.js 24 Docker profile. WORKSPACE_DEPLOYMENT_ENABLED defaults false; execution and Git profiles are also required to prepare eligible candidates. Only clean passing candidates with private commits qualify. Review binds commit/tree, artifact fingerprint/manifest, image ID and localhost policy. No push is required. The trusted packaged static server imports no project server code and verifies copied bytes before listening.
 
 The server publishes a Docker-assigned loopback port, uses bridge networking, read-only root/volume, UID 65534, no host binds, dropped capabilities and bounded resources/logs. Strict CSP requires separate scripts/styles and blocks browser external connections. No user secrets or arbitrary environment variables are accepted. There is one live deployment, three attempts per candidate, and a 30-minute server-enforced lease. Actual isolation/ownership and HTTP checks gate the saved URL. Stop/cancel, pending owned cleanup, expiry and restart recovery preserve truthful history; restart never automatically redeploys. README specifies artifact limits and operational steps. Cloud CI/CD, arbitrary application backends and hosted Jarvis remain outside this profile.
+
+
+## CP8 controlled workflow profile
+
+An opt-in WORKSPACE_WORKFLOW_ENABLED profile connects the reviewed plan/source request to proposal, fixed isolated checks and bounded repair requests. The initial review binds source/instruction/plan hash, exact existing/new paths, runtime image and a one-to-three-candidate budget. Its explicit authorization covers subsequent redacted failed-check logs and prior candidate diffs for those same paths. Existing three-candidate task limits still apply. Each generated candidate runs checks once; infrastructure failures, changed context/image, missing positive test counts or pending cleanup stop the workflow. There is one workflow worker and a 15-minute execution deadline, followed by bounded child shutdown/cleanup when needed.
+
+Persistent workflow records retain authorization, selected paths, candidate IDs, limits, timestamps, failure details and bounded events. Cancellation prevents further stages and interrupts the owned candidate. Startup retains active runs as INTERRUPTED without automatically resuming any AI requests. Existing candidate recovery handles interrupted work and owned resources. Passing output waits for exact diff/commit review. Git push and deployment retain independent explicit confirmation; no workflow toggle grants external publication. Workflow status is derived from actual candidate/publication/deployment records, including uncertain pushes, stopped/expired deployments and failed health/cleanup. Local-only deployment without push is supported.
+
+This is a controlled reviewed prototype profile, not unrestricted autonomous development. New repository provisioning, original-folder application/merge, arbitrary package installs/backends, production deployment and remote access remain outside it. The model receives no execution tools; all checks use the pre-existing fixed runner. Source isolation and per-project Git boundaries remain unchanged.

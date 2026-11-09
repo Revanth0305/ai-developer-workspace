@@ -140,6 +140,7 @@ function App() {
   const [aiConnection, setAiConnection] = useState<AiConnection | null>(null);
   const [runnerReady, setRunnerReady] = useState(false);
   const [deploymentEnabled, setDeploymentEnabled] = useState(false);
+  const [workflowEnabled, setWorkflowEnabled] = useState(false);
   const [view, setView] = useState<View>(viewFromHash);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [selectedId, setSelectedId] = useState(
@@ -172,6 +173,9 @@ function App() {
     api<{ enabled: boolean }>("/deployment/status", { signal: controller.signal })
       .then(value => { if (!controller.signal.aborted) setDeploymentEnabled(value.enabled); })
       .catch(() => { if (!controller.signal.aborted) setDeploymentEnabled(false); });
+    api<{ enabled: boolean }>("/workflow/status", { signal: controller.signal })
+      .then(value => { if (!controller.signal.aborted) setWorkflowEnabled(value.enabled); })
+      .catch(() => { if (!controller.signal.aborted) setWorkflowEnabled(false); });
     return () => controller.abort();
   }, [refreshKey]);
   const selected = snapshot?.projects.find(
@@ -552,7 +556,7 @@ function App() {
                       <section className="panel">
                         <div className="panel-heading">
                           <h2>Development journey</h2>
-                          <span className="badge neutral">7 / 8</span>
+                          <span className="badge neutral">8 / 8</span>
                         </div>
                         <ol className="journey">
                           {[
@@ -564,29 +568,12 @@ function App() {
                             "Git automation",
                             "Deployment",
                             "Autonomous workflow",
-                          ].map((label, index) => (
-                            <li
-                              key={label}
-                              className={
-                                index < 7 ? "done" : index === 7 ? "next" : ""
-                              }
-                            >
+                          ].map((label) => (
+                            <li key={label} className="done">
                               <span className="journey-step">
-                                {index < 7 ? (
-                                  <Icon name="check" size={13} />
-                                ) : (
-                                  index + 1
-                                )}
+                                <Icon name="check" size={13} />
                               </span>
-                              <span>
-                                {label}
-                                {index === 7 && (
-                                  <small>Awaiting your milestone review</small>
-                                )}
-                              </span>
-                              {index === 7 && (
-                                <span className="next-label">NEXT</span>
-                              )}
+                              <span>{label}</span>
                             </li>
                           ))}
                         </ol>
@@ -776,6 +763,7 @@ function App() {
                       ["Code execution", runnerReady ? "Isolated Node.js 24 tests" : "Runner not connected"],
                       ["Private commits & GitHub", "Reviewed · opt-in"],
                       ["Deployment", deploymentEnabled ? "Local Docker static sites" : "Disabled for this session"],
+                      ["Controlled workflow", workflowEnabled ? "Bounded · review before publishing" : "Disabled for this session"],
                     ].map(([label, value], index) => (
                       <div key={label} className="capability">
                         <span>{label}</span>
@@ -788,8 +776,7 @@ function App() {
                     ))}
                     <p className="settings-note">
                       The service listens on your computer's loopback address.
-                      Codex uses your local sign-in. Review each request before sending
-                      it. Containerized checks require a connected runner. Git publishing requires a separate reviewed commit and confirmed destination. Local deployment requires a checked private commit, reviewed public assets and a separate deployment confirmation.
+                      Codex uses your local sign-in. Review planning and workflow authorizations before sending. Controlled workflows can send bounded repair requests within your authorization. Containerized checks require a connected runner. Git publishing requires a separate reviewed commit and confirmed destination. Local deployment requires a checked private commit, reviewed public assets and a separate deployment confirmation.
                     </p>
                   </section>
                 </div>
@@ -1323,8 +1310,8 @@ function ProjectSettings({
         placeholder="Describe the stack, coding conventions, checks, and boundaries for this project."
       />
       <p className="source-note">
-        These settings are saved separately for this project. They are not sent
-        to an AI provider yet.
+        These settings are saved separately for this project and included only
+        in reviewed AI requests.
       </p>
       <button className="button primary" disabled={saving || !name.trim()}>
         {saving ? "Saving…" : "Save settings"}

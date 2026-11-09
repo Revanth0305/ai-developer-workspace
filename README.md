@@ -4,7 +4,7 @@ A local React + TypeScript and Spring Boot platform for managing development pro
 
 ## Current version
 
-Phases 1–7 are implemented for the current bounded scope: the holographic Jarvis dashboard, project registration/settings, tasks/history, source previews, reviewed Codex planning, isolated Node.js 24 candidates and separately reviewed personal GitHub publishing. Original managed folders stay unchanged. Reviewed local Docker static deployment is available.
+Phases 1–8 are implemented for the current bounded scope: the holographic Jarvis dashboard, project registration/settings, tasks/history, source previews, reviewed Codex planning, isolated Node.js 24 candidates and separately reviewed personal GitHub publishing. Original managed folders stay unchanged. Reviewed local Docker static deployment and bounded controlled workflows are available.
 
 ## Holographic command center
 
@@ -153,3 +153,12 @@ In **Code & checks**, use a passing, cleaned candidate, review and commit it loc
 The trusted static server runs from a pinned image ID as an unprivileged user, with read-only root/source, no host mounts, dropped capabilities, no-new-privileges, 128 MB RAM, half a CPU and 64 processes. Docker bridge networking supports HTTP; only a Docker-assigned **127.0.0.1** port is published. Unlike candidate checks, this deployment profile does not use network=none. The trusted server imports no project server code. The dashboard reports LIVE and a URL only after ownership, isolation, copied-artifact fingerprint and actual HTTP health checks succeed.
 
 One deployment can run at a time, with up to three attempts per candidate and a 30-minute lease. Stop/cancel and bounded logs are available in the task; Workspace Details summarizes saved results. Cleanup removes only labelled owned resources. Failed cleanup remains pending and blocks a new launch. Jarvis restart re-verifies an existing live deployment rather than redeploying it. The server enforces expiry while Jarvis is stopped; owned-resource cleanup resumes when Jarvis is running. Deployment volumes, database records and private commits remain local to each laptop. CP8 requires separate user review.
+
+
+## Controlled workflows (CP8)
+
+Opt in with `WORKSPACE_WORKFLOW_ENABLED=true` along with the Codex and execution flags. Start with a stored reviewed plan, authorize exact file paths in Code & checks, and review the change context. Select a budget of one to three candidates (within the task's existing three-candidate limit), then **Review controlled workflow**. The separate preview binds the exact source/plan context, fixed Docker image and budget. Confirm the authorization before starting.
+
+The workflow requests a tool-free proposal, checks its validated candidate in the existing isolated Node.js 24 runner, and can request bounded repairs for confirmed nonzero test failures. That initial authorization explicitly permits subsequent redacted failed-check logs and prior diffs to be sent to Codex for the same paths. Those later contexts are retained with each candidate. Source/plan changes or runtime-image changes stop the loop. Infrastructure failures, missing test counts and pending cleanup stop without automatic retry. Budget is at most three model proposals and one check per candidate, within a 15-minute execution deadline; cancellation and cleanup may take the existing bounded subprocess shutdown time.
+
+After tests pass, open **workflow candidate & next steps** to review its actual diff. Commit, GitHub push and local deployment retain their separate exact reviews and confirmations. Workflow status follows the real candidate, publication and deployment records; a local-only deployment is also permitted without pushing. A completed deployment later stopped/expired is shown accordingly, not indefinitely successful. Closing the dialog does not cancel an authorized running loop. Cancel it with **Cancel controlled workflow**; inspect pending cleanup in candidate history. Restart records an active loop as INTERRUPTED and never resumes AI requests or publishing automatically. No original folder is modified, no new repositories are provisioned, and no unattended external publication is authorized by this switch.

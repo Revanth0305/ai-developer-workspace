@@ -8,10 +8,10 @@ Updated: 2026-11-09 (Asia/Calcutta)
 | CP2: Dashboard | Complete | Browser-verified registration, project details, source preview, saved draft, settings, history and cancellation |
 | CP3: Project management | Complete for read-only scope | Two-project isolation API test; canonical folder checks; overlap/platform/traversal rejection; scoped Git inspection |
 | CP4: AI planning | Complete; user authorized CP5 | Reviewed context → live signed-in Codex → validated, stored project plan. 27 tests pass, including installed-binary compatibility. Live cancellation verified. |
-| CP5: Code execution | Complete for controlled Node.js 24 candidate scope; awaiting user review | 47 tests passed, including real Docker isolation; live failed check → reviewed repair → 2 passing tests, downloaded patch and cancellation; original source unchanged |
-| CP6: Managed-project Git automation | Complete for reviewed personal GitHub profile; awaiting user review | Final transport-fix build: 53 tests pass, zero failures/errors/skips. Real commit and GitHub push verified; original source unchanged |
-| CP7: Deployment | Authorized; target selection pending | Reviewing a bounded test-deployment profile; no deployment result or hosting account is configured yet |
-| CP8: Autonomous workflow | Not started | Requires earlier execution and recovery milestones |
+| CP5: Code execution | Complete for controlled Node.js 24 candidate scope | 47 tests passed, including real Docker isolation; live failed check → reviewed repair → 2 passing tests, downloaded patch and cancellation; original source unchanged |
+| CP6: Managed-project Git automation | Complete for reviewed personal GitHub profile | Final transport-fix build: 53 tests pass, zero failures/errors/skips. Real commit and GitHub push verified; original source unchanged |
+| CP7: Deployment | Complete for local Docker static sites | 66 tests passed; actual local HTTP site, stop/cleanup and restart recovery verified; checkpoint 72ed430 pushed |
+| CP8: Autonomous workflow | Complete for the bounded reviewed profile | 79 tests pass, zero failures/errors/skips; real loop, GitHub publication, local deployment, cancellation and restart persistence verified |
 
 ## Historical CP1–3 verification
 
@@ -32,7 +32,7 @@ Updated: 2026-11-09 (Asia/Calcutta)
 
 - Project creation means registration of an existing folder. Managed application scaffolding is a later capability.
 - Source inspection is read-only and bounded; filename exclusions are not a complete secret scanner.
-- Planning is read-only. Candidate checks and private Git commits/pushes are separate opt-in reviewed operations. Original-folder editing, arbitrary command execution and deployment remain unavailable.
+- Planning is read-only. Candidate checks and private Git commits/pushes are separate opt-in reviewed operations. Original-folder editing and arbitrary command execution remain unavailable. Local static deployments and controlled candidate workflows are opt-in; see their bounded profiles below.
 - This local prototype is not configured for remote access or multiple users.
 - Attempts and publications persist in H2. Versioned migrations remain deferred for broader upgrades.
 
@@ -152,3 +152,28 @@ CP6 is complete. The user authorized CP7 on 2026-11-09; finish and report it bef
 - Docker Desktop was stopped after the break; restarted the installed runtime. Third deployment used the same reviewed passing private commit and became LIVE at http://127.0.0.1:63027/. A normal Stop-Workspace/Start-Workspace cycle retained LIVE, cleanupPending=false, exact artifact/commit and actual HTTP health. Browser verified the deployed page during restart and Hello, Revanth! afterward. Lease ends 21:14:57 IST; this temporary URL is not persistent hosting.
 - Workspace Details shows real LIVE/STOPPED/FAILED deployment history and opens the corresponding task. Desktop deployment controls verified. Mobile viewport override did not take effect in the current browser session (actual width stayed 1280), so this session does not claim a new 390px verification; existing responsive styles remain and a future mobile check is advisable. Ignored proof: cp7-restart-proof.json, cp7-recovered-dashboard.png, cp7-recovered-site.png under .runtime.
 - Journey is 7/8. Static-only deployment scope and limits are recorded in README/PROJECT_SPEC. No managed-project source application or additional remote push occurred. Latest user instruction explicitly authorizes continuing through CP8 without another milestone approval, while reporting checkpoints and stopping at 10% quota. New-project repository provisioning and hosted visual preview remain deferred as discussed.
+
+
+## CP8 in progress - 2026-11-09
+
+- CP7 checkpoint 72ed430 is committed and pushed to the approved platform repository. User authorized continuing through all remaining checkpoints while reporting each and stopping at 10% quota.
+- Added opt-in persistent controlled workflows: exact initial source/plan/image/budget authorization; automatic tool-free proposals, fixed isolated checks and bounded repairs; three-candidate task cap, one check per generated candidate, 15-minute execution deadline, cancellation, truthful failure/cleanup and no automatic restart resume. Existing exact diff/commit/push/deployment gates remain. New-project/repository provisioning and hosted UI preview remain deferred.
+- Full CP8 validation and live workflow verification are underway. Journey remains 7/8 pending proof. Do not claim CP8 complete until final tests, real end-to-end results, cancellation/restart evidence and source-preservation checks are recorded.
+
+
+## CP8 live verification - 2026-11-09
+
+- First full CP8 build passed 77 tests with zero failures/errors/skips. Final build includes two additional regression cases for changed context after admission and disabled/busy profiles, plus the context-binding correction; inspect its result before final completion. Only one Gradle validation runs at a time.
+- Real workflow 48c7388b-3b25-46ef-94a6-d9e4573fbc0b reused the disposable CP7 project's stored reviewed plan. Only public/greeting.mjs was authorized; budget two candidates, one used. Real Codex proposal advanced automatically to isolated Docker checks: execution f65b5161-ee36-41ce-8eb3-d614272b2870, exit 0, three tests passed, cleanupPending=false. Workflow stopped at REVIEW_COMMIT.
+- Reviewed the actual three-line diff and separately committed/pushed to the previously approved Revanth0305/ai-workspace-cp6-verification. GitHub API confirms branch codex/task-07c4af82-f65b5161 at 228605359882ac0e49beadb0a9b5b50c29458882. Separately reviewed deployment b26d50ed-16b7-46d4-a239-5cc410f07a02 became LIVE at http://127.0.0.1:53278/ and workflow COMPLETED. Browser returned Hello, CP8! from that actual site. Lease ends 21:29:21 IST; the URL is temporary and laptop-local.
+- Real cancellation workflow 9be5458b-26d9-449f-9205-f34dc3ff9f05 stopped candidate d54d4216-b818-4c83-897a-78002afafc04 while preparing a proposal. Both report CANCELLED, zero check runs and cleanupPending=false. Task's total three-candidate limit is visibly enforced. The successful workflow remained independent.
+- A normal stop/start with the final context-bound JAR retained COMPLETED and CANCELLED and the verified live site. Browser reopened both saved outcomes and actual publication/deployment records. Unit tests cover active-run restart interruption/no resume, bounded repairs and failures; no fabricated active-loop restart success is claimed. All six original source hashes match the baseline, with a clean original Git working tree. Runtime proof remains ignored under .runtime/cp8-*.json/png.
+- Final settings correctly report the workflow opt-in capability. Existing overview/navigation separation is preserved. This session's mobile viewport override remains ineffective; no fresh physical/mobile-size pass is claimed. Latest quota: 65% primary / 51% secondary.
+
+
+## CP8 final confirmation - 2026-11-09
+
+- Final sequential Build-Workspace.ps1 -SkipInstall passed frontend type checking/production build, executable JAR and **79 backend tests, zero failures/errors/skips**, including installed Codex and real Docker compatibility checks. Thirteen workflow tests cover pass/review gates, bounded repairs, exhausted budget, infrastructure failure, pending cleanup, changed context/image, cancellation, timeout, restart interruption, missing test evidence and disabled/busy profiles. This supersedes pending validation notes above.
+- Final context-bound JAR was started with the preserved verification database and all five explicit integration flags. Browser/API reverified the saved COMPLETED and CANCELLED workflows and real deployed HTTP site after restart. Original managed source and Git state remain unchanged. Long commit/image text now wraps inside candidate panels; workflow authorization checkboxes have bounded width. The separate final frontend type-check/production build passed after journey/copy/style changes. Browser confirmed the 8/8 journey.
+- Platform journey is **8/8 for the documented bounded profiles**, not unrestricted unattended development. Managed scaffolding/new repository creation, applying/merging changes into original folders, arbitrary builds/cloud hosting, remote/mobile access and a hosted UI-only demo remain future decisions. Fresh phone-size verification remains advisable because the current browser ignored viewport overrides. No new features should start without the user's next instruction.
+- Jarvis is left running locally for review using the ignored disposable verification database. The CP8 test site's lease ends at 21:29:21 IST; expired URLs are expected to stop. Normal production data and credentials remain untouched and are not pushed. Final source and history are to be committed/pushed to the already approved platform branch; check Git for actual synchronization state.
