@@ -35,9 +35,15 @@ Limits: 12,000 characters per source file, 24,000 selected source characters, 48
 - Source previews remain limited to 64 KB, 250 files, 5,000 visited entries and 12 folder levels.
 - The planning process disables shell, apps, plugins, MCP servers, delegation, browser/computer access, image tools, hooks and related inherited capabilities. It verifies read-only/no-network/never-approve thread settings and empty instruction sources. Installed-binary compatibility testing verifies an empty model-facing tool catalog against a local synthetic provider.
 - Unexpected tool activity or approvals fail the request. Provider errors are reduced to local actionable messages rather than exposing raw account diagnostics. Model results render as plain text.
-- Planning does not edit files, run checks, commit, push or deploy. No managed-project write or command-execution endpoint is available.
+- Planning does not edit files, run checks, commit, push or deploy. CP5 separately stages validated proposals in private candidates and offers one fixed container test profile; it never writes original managed-project source.
 - The application is a single-user local prototype, not a public hosting service. Hibernate schema update remains a prototype choice; versioned migrations are required before broader upgrades involving important data.
 
-## Next milestone: CP5 controlled execution
+## CP5 controlled execution
 
-Wait for the user's CP4 review before starting. CP5 requires an isolated executor, reviewed diffs, task branches/worktrees, bounded commands/logs/retries, cancellation and recoverable state. Managed-project Git automation (CP6), deployment (CP7) and unattended workflows (CP8) remain separate milestones. Publishing this platform's source repository does not implement CP6.
+CP5 is complete for dependency-free Node.js 24 candidates and is awaiting user review. A completed plan is required. The user authorizes up to eight exact source/new paths and reviews the bound request before a tool-free Codex proposal. Validated full-file writes/deletes are staged in an independent private Git snapshot; the original remains unchanged. Clean committed source is required, with supported tracked text bounded to 250 files / 4 MB. Hooks, filters and external Git helpers are disabled for snapshot inspection.
+
+The reviewed diff, source/candidate fingerprints and resolved official image ID bind a separate explicit check run. Source is copied into a private named volume without host binds. The runner uses read-only source/root, UID 65534, no network, dropped capabilities, no-new-privileges, 256 MB RAM, one CPU, 64 processes, a 64 MB /tmp and a 60-second test limit. Only fixed `node --test --test-reporter=tap` is supported; no package installation or model-selected commands/images. Actual exit state and a positive reported test count are required for PASSED.
+
+Execution attempts persist context, diff, bounded redacted logs, exit/test results, cancellation and cleanup state. Three candidates per task (including repairs) and three runs per candidate bound retries. A repair requires a completed failed check and separately reviewed diff/log context. Cancellation stops owned work; interrupted operations recover as INTERRUPTED. Cleanup verifies ownership, blocks further work while pending and gates successful patch export. Execution is opt-in through WORKSPACE_EXECUTION_ENABLED=true and Docker must be available; there is no host fallback.
+
+Managed-project Git automation (CP6), deployment (CP7) and unattended workflows (CP8) remain separate, unstarted milestones. Publishing this platform's source repository does not implement CP6. Wait for the user's CP5 review before continuing.

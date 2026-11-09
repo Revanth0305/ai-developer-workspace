@@ -349,7 +349,7 @@ function App() {
             </div>
           </div>
           <span className="version">
-            PLANNING BUILD <span>v0.3</span>
+            CONTROLLED BUILD <span>v0.4</span>
           </span>
         </div>
       </aside>
@@ -594,7 +594,7 @@ function App() {
                       <section className="panel">
                         <div className="panel-heading">
                           <h2>Development journey</h2>
-                          <span className="badge neutral">4 / 8</span>
+                          <span className="badge neutral">5 / 8</span>
                         </div>
                         <ol className="journey">
                           {[
@@ -610,11 +610,11 @@ function App() {
                             <li
                               key={label}
                               className={
-                                index < 4 ? "done" : index === 4 ? "next" : ""
+                                index < 5 ? "done" : index === 5 ? "next" : ""
                               }
                             >
                               <span className="journey-step">
-                                {index < 4 ? (
+                                {index < 5 ? (
                                   <Icon name="check" size={13} />
                                 ) : (
                                   index + 1
@@ -622,11 +622,11 @@ function App() {
                               </span>
                               <span>
                                 {label}
-                                {index === 4 && (
-                                  <small>Controlled execution in development</small>
+                                {index === 5 && (
+                                  <small>Awaiting your milestone review</small>
                                 )}
                               </span>
-                              {index === 4 && (
+                              {index === 5 && (
                                 <span className="next-label">NEXT</span>
                               )}
                             </li>

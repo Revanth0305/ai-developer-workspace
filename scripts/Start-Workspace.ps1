@@ -22,7 +22,8 @@ try {
     $started += $backend
     $node = (Get-Command node.exe -ErrorAction Stop).Source
     $vite = Join-Path $root 'frontend\node_modules\vite\bin\vite.js'
-    $frontend = Start-Process -FilePath $node -ArgumentList @(('"' + $vite + '"'), '--host', '127.0.0.1', '--port', '5173', '--strictPort') -WorkingDirectory (Join-Path $root 'frontend') -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $runtime 'frontend.log') -RedirectStandardError (Join-Path $runtime 'frontend.error.log')
+    # Detached Vite must not shut down when this launcher's stdin closes.
+    $frontend = Start-Process -FilePath $node -ArgumentList @(('"' + $vite + '"'), '--host', '127.0.0.1', '--port', '5173', '--strictPort') -Environment @{ CI = 'true' } -WorkingDirectory (Join-Path $root 'frontend') -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $runtime 'frontend.log') -RedirectStandardError (Join-Path $runtime 'frontend.error.log')
     $started += $frontend
     $ready = $false
     for ($attempt = 0; $attempt -lt 60; $attempt++) {

@@ -31,4 +31,12 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	// Runtime availability can change without source changes (for example after a reboot).
+	// Never reuse a skipped compatibility result when either opt-in check is requested.
+	def codexExecutable = providers.environmentVariable('WORKSPACE_CODEX_TEST_EXECUTABLE').orElse('')
+	def dockerExecutable = providers.environmentVariable('WORKSPACE_DOCKER_TEST_EXECUTABLE').orElse('')
+	inputs.property('codexCompatibilityExecutable', codexExecutable)
+	inputs.property('dockerCompatibilityExecutable', dockerExecutable)
+	inputs.property('dockerCompatibilityContext', providers.environmentVariable('WORKSPACE_DOCKER_CONTEXT').orElse(''))
+	outputs.upToDateWhen { codexExecutable.get().isEmpty() && dockerExecutable.get().isEmpty() }
 }

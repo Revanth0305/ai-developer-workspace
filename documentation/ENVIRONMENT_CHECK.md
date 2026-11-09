@@ -37,3 +37,7 @@ Step 1 is complete. Node.js, npm, Git, the JDK and the project build tool have b
 Git 2.56.0, Node.js 24.15.0, npm 11.13.0 and Eclipse Temurin JDK/javac 21.0.13 are verified. Machine JAVA_HOME points to the Temurin JDK 21 installation. Gradle Wrapper 9.8.2 builds the executable backend JAR. Codex App Server 0.167.0-alpha.3.2 reports local ChatGPT sign-in and passed a live read-only planning check.
 
 The Codex execution environment supplies a long temporary path that exceeds Java's local socket path limit. Validation uses a process-only `jdk.net.unixdomain.tmpdir` property pointing to a shorter local temporary folder. This is an environment-specific workaround, not a machine security or execution-policy change. Windows Application Control still blocks oxlint's native binding; lint has not been verified. TypeScript checking, production build and backend tests are separate checks.
+
+## CP5 runtime verification — 2026-11-09
+
+Docker Desktop 4.98.0, Docker Engine/CLI 29.9.2 and WSL 2.7.14 are installed. Windows was restarted after enabling VirtualMachinePlatform; the Linux engine is working. The official Node 24 Alpine image is prepared. Both optional runtime compatibility tests passed in the 47-test destination build. The background frontend receives child-only CI=true to stay running when the launcher input closes. Local images, volumes, databases, sign-in state and dependencies are machine-specific and do not synchronize through Git.

@@ -2,6 +2,8 @@
 
 Prepared: 2026-11-09 (Asia/Calcutta).
 
+**Resolved after reboot on 2026-11-09.** This is the historical pre-restart handoff. Docker's Linux engine and real compatibility checks now pass; CP5 verification and current review requirements are recorded in PROGRESS_TRACKER.md. Do not repeat installation or reboot setup from this document.
+
 ## Immediate next step
 
 Restart Windows normally. Docker Desktop and WSL are installed; VirtualMachinePlatform was enabled successfully, but Microsoft setup reported that it cannot take effect until Windows restarts. The user agreed to the required restart. Do not add setup workarounds or claim Docker checks have passed before the reboot.

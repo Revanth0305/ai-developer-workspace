@@ -4,7 +4,7 @@ A local React + TypeScript and Spring Boot platform for managing development pro
 
 ## Current version
 
-Phases 1–4 are implemented: dashboard, persistent project registration, per-project instructions, draft tasks, task history, activity, read-only Git status, and bounded source previews. Codex read-only planning is available after local connection checks and explicit context review. Code execution, managed-project Git automation and deployment are not enabled.
+Phases 1–5 are implemented for the current bounded scope: dashboard, project registration/settings, tasks/history, source previews, reviewed Codex planning and isolated code candidates with dependency-free Node.js 24 checks. Original managed folders stay unchanged. Managed-project Git automation and deployment remain future milestones.
 
 ## Prerequisites
 
@@ -111,9 +111,22 @@ This optional test uses a synthetic local provider, verifies that the model rece
 
 Tested App Server: `0.167.0-alpha.3.2`. Revalidate compatibility after CLI updates. See [official App Server documentation](https://learn.chatgpt.com/docs/app-server) and [current specification](documentation/PROJECT_SPEC.md).
 
-CP4 is the review checkpoint. Wait for user approval before implementing CP5 controlled execution.
+CP5 is the review checkpoint. Wait for user approval before CP6 managed-project Git automation.
 
 
-## CP5 work in progress
+## CP5 controlled candidates and checks
 
-The new **Code & checks** view prepares isolated file candidates and reviewed container checks. CP5 is not yet complete: this Windows computer requires a restart to activate Docker's VirtualMachinePlatform prerequisite before real execution validation. See [restart handoff](documentation/CP5_RESTART_HANDOFF.md). Controlled execution remains disabled by default; no original managed-project files are modified by this candidate workflow.
+After reviewing a completed plan, open **Code & checks**, authorize existing/new paths, review the exact request, and request a file proposal. Review its independent candidate diff before starting checks. Failed check logs can support a separately reviewed repair request. A passing, cleaned-up result provides a downloadable patch; applying it remains a separate manual action.
+
+Requires Docker Desktop with Linux containers and the official image prepared once:
+
+```powershell
+docker pull node:24-alpine
+$env:WORKSPACE_CODEX_ENABLED = 'true'
+$env:WORKSPACE_EXECUTION_ENABLED = 'true'
+.\scripts\Start-Workspace.ps1
+```
+
+The fixed profile runs `node --test --test-reporter=tap` with Node.js 24. It supports dependency-free tests, copies source to a private volume, and uses read-only source/root, no network, no host mounts/credentials, an unprivileged user, 256 MB RAM, one CPU, 64 processes, bounded logs and a 60-second test limit. It does not install dependencies or accept arbitrary host commands. Limits are three candidates per task (including repairs) and three check runs per candidate. Source snapshots require a clean committed repository and supported tracked text within 250 files / 4 MB. Credential detection is heuristic; inspect every context preview.
+
+Execution remains disabled by default. To include both runtime compatibility checks in Build-Workspace.ps1, set WORKSPACE_CODEX_TEST_EXECUTABLE and WORKSPACE_DOCKER_TEST_EXECUTABLE to the installed executables. The verified destination run passed all 47 tests with neither optional check skipped. See [progress tracker](documentation/PROGRESS_TRACKER.md) for evidence and limitations.

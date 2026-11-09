@@ -224,6 +224,12 @@ public final class CodexConnection implements PlanningClient {
                 descendants.forEach(ProcessHandle::destroyForcibly); process.destroyForcibly();
                 process.waitFor(2, TimeUnit.SECONDS);
             }
+            // Windows launchers can exit before their child releases redirected files.
+            for (ProcessHandle child : descendants) {
+                if (child.isAlive()) child.destroyForcibly();
+                try { child.onExit().get(2, TimeUnit.SECONDS); }
+                catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException ignored) { }
+            }
         } catch (InterruptedException e) { Thread.currentThread().interrupt(); process.destroyForcibly(); }
         try { input.close(); } catch (IOException ignored) { }
     }

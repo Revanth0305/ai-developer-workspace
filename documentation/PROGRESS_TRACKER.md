@@ -8,7 +8,7 @@ Updated: 2026-11-09 (Asia/Calcutta)
 | CP2: Dashboard | Complete | Browser-verified registration, project details, source preview, saved draft, settings, history and cancellation |
 | CP3: Project management | Complete for read-only scope | Two-project isolation API test; canonical folder checks; overlap/platform/traversal rejection; scoped Git inspection |
 | CP4: AI planning | Complete; user authorized CP5 | Reviewed context → live signed-in Codex → validated, stored project plan. 27 tests pass, including installed-binary compatibility. Live cancellation verified. |
-| CP5: Code execution | In progress; Windows restart required before live Docker validation | Candidate proposals, diff review, bounded checks and repair flow implemented; container end-to-end verification is pending |
+| CP5: Code execution | Complete for controlled Node.js 24 candidate scope; awaiting user review | 47 tests passed, including real Docker isolation; live failed check → reviewed repair → 2 passing tests, downloaded patch and cancellation; original source unchanged |
 | CP6: Managed-project Git automation | Not started | Current Git integration is inspection only |
 | CP7: Deployment | Not started | Local application only; no hosting target configured |
 | CP8: Autonomous workflow | Not started | Requires earlier execution and recovery milestones |
@@ -38,7 +38,7 @@ Updated: 2026-11-09 (Asia/Calcutta)
 
 ## Next requirement
 
-The user authorized CP5 on 2026-11-09. Resume from documentation/CP5_RESTART_HANDOFF.md after Windows restarts, finish live Docker validation, and report CP5 before proceeding to CP6. The user also requests stopping work when the remaining Codex usage quota reaches 10%. The selected platform repository is the public GitHub repository Revanth0305/ai-developer-workspace; do not change the account or repository without asking.
+CP5 is the current review checkpoint. Report the completed controlled candidate scope and wait for the user before CP6. The user also requests stopping work when remaining Codex usage quota reaches 10%. The selected public GitHub repository remains Revanth0305/ai-developer-workspace; do not change the account or repository without asking. The restart handoff below is historical and resolved.
 
 
 ## Destination review and Jarvis UI — 2026-11-08
@@ -81,3 +81,15 @@ The user authorized CP5 on 2026-11-09. Resume from documentation/CP5_RESTART_HAN
 - CP5 is not complete. Preserve the in-progress work and follow CP5_RESTART_HANDOFF.md after restart. The user requested keeping this restart process simple.
 
 - Pre-restart checkpoint validation: frontend production build/type checking and backend JAR build passed; 46 tests passed, 0 failures, 0 errors, 1 skipped (the opt-in real Docker test). Project servers were stopped cleanly before reboot. Real Docker and browser end-to-end checks remain pending.
+
+## CP5 completed after restart — 2026-11-09
+
+- Windows restarted, the hypervisor is active, and Docker Desktop's Linux engine is healthy. Official node:24-alpine image resolved to sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8. Runs bind the reviewed image ID.
+- Build-Workspace.ps1 -SkipInstall passed frontend type checking/production build, backend executable JAR and **47 tests, zero failures/errors/skips**, with both installed Codex and real Docker compatibility opt-ins enabled. Real Docker verifies read-only source/root, no external network interface or host credentials/socket, passing/failing tests and cleanup. Runtime opt-in checks now bypass cached skipped test results.
+- Fixed a Windows Codex launcher cleanup race by waiting for owned child termination. Detached Vite uses child-only CI=true so closed launcher stdin does not terminate the frontend. No machine security policy was weakened.
+- Browser verification used a separate ignored database and a clean disposable greeting repository. Real Codex produced a stored plan and a comment-only initial candidate, intentionally leaving the blank-name test failing. One initial bounded check timed out with no confirmed exit/test count and cleaned up; a reviewed retry reported exit 1, two tests, one failure. This timeout was not counted as a test result.
+- Reviewed the actual failed logs and prior diff before requesting the repair. The repaired candidate reported exit 0, two tests, zero failures. Browser patch download succeeded; git apply --check accepted the downloaded patch without applying it. Only greeting.mjs was authorized; tests stayed outside editable paths.
+- Third candidate exercised cancellation after checks started: stored CANCELLED, cleanupPending=false. Docker lists no owned leftover containers or volumes. The task visibly enforces the three-candidate limit. All three original source hashes match their baseline and the original Git working tree remains clean.
+- After a normal Stop-Workspace/Start-Workspace cycle with the same verification database, browser history retained FAILED, PASSED and CANCELLED candidates, the repaired diff, actual exit/test counts and the checked-patch link. Desktop 1280px and mobile 390px document widths matched their viewports with no horizontal overflow. Final frontend production build/type checking passed after updating the journey to 5/8. Proof images remain ignored under .runtime/.
+- Scope: independent private Git candidates, exact context/diff review, fixed dependency-free Node.js 24 checks, bounded logs/retries/repairs, cancellation, persisted results and checked-patch export. No original-source application, managed-project commit/push, dependency installation, arbitrary host commands or deployment. Execution stays opt-in.
+- CP6–8 remain unstarted. Stop for user review before CP6.
