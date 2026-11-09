@@ -111,7 +111,7 @@ This optional test uses a synthetic local provider, verifies that the model rece
 
 Tested App Server: `0.167.0-alpha.3.2`. Revalidate compatibility after CLI updates. See [official App Server documentation](https://learn.chatgpt.com/docs/app-server) and [current specification](documentation/PROJECT_SPEC.md).
 
-CP5 is the review checkpoint. Wait for user approval before CP6 managed-project Git automation.
+CP6 is in verification. Wait for user review before CP7 deployment.
 
 
 ## CP5 controlled candidates and checks
@@ -130,3 +130,9 @@ $env:WORKSPACE_EXECUTION_ENABLED = 'true'
 The fixed profile runs `node --test --test-reporter=tap` with Node.js 24. It supports dependency-free tests, copies source to a private volume, and uses read-only source/root, no network, no host mounts/credentials, an unprivileged user, 256 MB RAM, one CPU, 64 processes, bounded logs and a 60-second test limit. It does not install dependencies or accept arbitrary host commands. Limits are three candidates per task (including repairs) and three check runs per candidate. Source snapshots require a clean committed repository and supported tracked text within 250 files / 4 MB. Credential detection is heuristic; inspect every context preview.
 
 Execution remains disabled by default. To include both runtime compatibility checks in Build-Workspace.ps1, set WORKSPACE_CODEX_TEST_EXECUTABLE and WORKSPACE_DOCKER_TEST_EXECUTABLE to the installed executables. The verified destination run passed all 47 tests with neither optional check skipped. See [progress tracker](documentation/PROGRESS_TRACKER.md) for evidence and limitations.
+
+## Reviewed Git publishing (CP6)
+
+Opt in with `WORKSPACE_GIT_ENABLED=true` before Start-Workspace.ps1 and sign in to the selected personal account using GitHub CLI. For a passing candidate, **Commit & GitHub** asks for the account, existing repository, author and message. Review the exact commit diff and destination, then commit locally. A separate confirmation publishes that saved commit to its dedicated `codex/task-...` branch and verifies the remote commit ID. Repository creation remains an explicit setup step outside the dashboard.
+
+The commit preserves the original parent history and unchanged files, including files outside the bounded text snapshot. The original managed folder, index, branch and remotes are not modified. Publishing includes the original Git history: inspect it and the destination visibility before confirming. The initial profile supports personal GitHub HTTPS repositories, up to 50 MB of reachable history, and one fixed destination per committed candidate. No tokens are stored in application data, no hooks are executed, and no force push is used. A conflicting destination branch is rejected. Unconfirmed/interrupted pushes retain PUSH_UNKNOWN and can be explicitly reconciled against the exact remote branch. Private commit artifacts and publication records stay local to each laptop; push before switching computers.

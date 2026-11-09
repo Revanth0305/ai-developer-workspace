@@ -17,6 +17,10 @@ if (-not $env:WORKSPACE_CODEX_EXECUTABLE) {
     if ($codexCommand) { $env:WORKSPACE_CODEX_EXECUTABLE = $codexCommand.Source }
 }
 
+if (-not $env:WORKSPACE_GH_EXECUTABLE) {
+    $ghCommand = Get-Command gh.exe -ErrorAction SilentlyContinue
+    if ($ghCommand) { $env:WORKSPACE_GH_EXECUTABLE = $ghCommand.Source }
+}
 if (-not $env:WORKSPACE_DOCKER_EXECUTABLE) {
     $dockerCommand = Get-Command docker.exe -ErrorAction SilentlyContinue
     if ($dockerCommand) { $env:WORKSPACE_DOCKER_EXECUTABLE = $dockerCommand.Source }

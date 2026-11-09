@@ -9,7 +9,7 @@ Updated: 2026-11-09 (Asia/Calcutta)
 | CP3: Project management | Complete for read-only scope | Two-project isolation API test; canonical folder checks; overlap/platform/traversal rejection; scoped Git inspection |
 | CP4: AI planning | Complete; user authorized CP5 | Reviewed context → live signed-in Codex → validated, stored project plan. 27 tests pass, including installed-binary compatibility. Live cancellation verified. |
 | CP5: Code execution | Complete for controlled Node.js 24 candidate scope; awaiting user review | 47 tests passed, including real Docker isolation; live failed check → reviewed repair → 2 passing tests, downloaded patch and cancellation; original source unchanged |
-| CP6: Managed-project Git automation | Not started | Current Git integration is inspection only |
+| CP6: Managed-project Git automation | In progress; user authorized 2026-11-09 | Private branch commit and separately reviewed GitHub push implemented; tests and live verification underway |
 | CP7: Deployment | Not started | Local application only; no hosting target configured |
 | CP8: Autonomous workflow | Not started | Requires earlier execution and recovery milestones |
 
@@ -38,7 +38,7 @@ Updated: 2026-11-09 (Asia/Calcutta)
 
 ## Next requirement
 
-CP5 is the current review checkpoint. Report the completed controlled candidate scope and wait for the user before CP6. The user also requests stopping work when remaining Codex usage quota reaches 10%. The selected public GitHub repository remains Revanth0305/ai-developer-workspace; do not change the account or repository without asking. The restart handoff below is historical and resolved.
+The user authorized CP6 on 2026-11-09. Complete its validation, report and stop before CP7. Stop work when remaining Codex usage quota reaches 10%. The platform repository remains Revanth0305/ai-developer-workspace. The user separately authorized public Revanth0305/ai-workspace-cp6-verification for the disposable managed-project verification, and restored GitHub CLI device sign-in. Do not infer new managed-project destinations from either repository. The restart handoff below is historical and resolved.
 
 
 ## Destination review and Jarvis UI — 2026-11-08
@@ -93,3 +93,13 @@ CP5 is the current review checkpoint. Report the completed controlled candidate 
 - After a normal Stop-Workspace/Start-Workspace cycle with the same verification database, browser history retained FAILED, PASSED and CANCELLED candidates, the repaired diff, actual exit/test counts and the checked-patch link. Desktop 1280px and mobile 390px document widths matched their viewports with no horizontal overflow. Final frontend production build/type checking passed after updating the journey to 5/8. Proof images remain ignored under .runtime/.
 - Scope: independent private Git candidates, exact context/diff review, fixed dependency-free Node.js 24 checks, bounded logs/retries/repairs, cancellation, persisted results and checked-patch export. No original-source application, managed-project commit/push, dependency installation, arbitrary host commands or deployment. Execution stays opt-in.
 - CP6–8 remain unstarted. Stop for user review before CP6.
+
+## CP6 verification — 2026-11-09
+
+- User authorized CP6 and separately approved public Revanth0305/ai-workspace-cp6-verification for disposable managed-project verification. GitHub CLI device sign-in was restored as Revanth0305. The platform repository remains Revanth0305/ai-developer-workspace.
+- Implemented opt-in WORKSPACE_GIT_ENABLED, exact account/repository and author/message review, private full-tree branch commits from checked candidates, preserved original parents/modes/unchanged binary files, independent object storage, separate push confirmation and exact remote-ID verification. No original working-folder/index/branch/remote writes, hooks, force pushes, model-controlled Git commands or stored credentials.
+- Six new CP6 tests cover parent/binary/source preservation, stale reviews, dirty/tampered source, failed/unclean candidates, unauthorized paths, idempotent push, conflicting remote branches, interrupted push recovery and invalid destination/metadata. Expanded build passed **53 tests, zero failures/skips**, with real Docker and installed Codex checks enabled before the final transport correction.
+- Browser verified real candidate commit **7ce3f8c4e3efa3fa30d43edda70ee8c4ec5c3213**, parent b4f8ebd77d751913acb18e4d83941fdf8aa837e4, dedicated branch codex/task-7eff31ec-47eb581f, in the approved verification repository. GitHub API independently confirmed the exact branch ID. Commit changes only greeting.mjs (four added lines). All three original source hashes and original clean Git status are unchanged.
+- Live Windows transport initially failed because Java/Git split a double-quoted helper path containing spaces. The application retained PUSH_UNKNOWN, including across restart. A credential-safe Java dry run reproduced the failure and verified shell single quoting. After correction, explicit browser reconciliation/push reached PUSHED with the real GitHub commit link. No false push success was reported.
+- Mobile document width remained 390 at a 390px viewport. Browser proof is ignored .runtime/cp6-pushed.png. Final transport-fix full build was started; inspect its latest test XML/report before declaring CP6 fully complete. The journey remains 5/8 until that final confirmation is saved. Stop before CP7, and stop at the user's 10% quota threshold. Last checked quota: 11% primary, 71% secondary.
+- Limits: existing personal GitHub HTTPS repositories, 50 MB reachable history, one bound destination per committed candidate. Push includes original repository history; the UI explicitly requires reviewing history and visibility. Repository creation, original-folder application/merge, organizations/GitLab and deployment remain outside this initial profile. Local publication artifacts/data/credentials do not synchronize through Git.

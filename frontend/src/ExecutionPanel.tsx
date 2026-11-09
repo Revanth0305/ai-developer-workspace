@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import GitPanel from "./GitPanel";
 
 type Runner = { enabled: boolean; available: boolean; profile: string; imageId: string; message: string };
 type Preview = { hash: string; prompt: string; files: string[]; newFiles: string[]; repairOf: string | null; baseCommit: string; profile: string };
@@ -142,6 +143,7 @@ export default function ExecutionPanel({ taskId, projectId, taskStatus, onChange
         {attempt.status === "PASSED" && !attempt.cleanupPending && <a className="button secondary" href={`/api/executions/${attempt.id}/patch`} download>Download checked patch</a>}
       </div>
       <details><summary>Context sent for this candidate</summary><pre className="context-preview" tabIndex={0}>{attempt.contextPreview}</pre></details>
+      {attempt.status === "PASSED" && !attempt.cleanupPending && <GitPanel key={attempt.id} id={attempt.id} />}
     </div>}
     {taskStatus !== "PLANNED" && <p className="source-note">Complete and review a plan before requesting file changes.</p>}
     {runner?.enabled && taskStatus === "PLANNED" && attempts.length < 3 && <details className="planning-request" open={!attempts.length}>
