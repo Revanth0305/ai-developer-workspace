@@ -69,7 +69,7 @@ export default function ExecutionPanel({ taskId, projectId, taskStatus, onChange
         }
         if (controller.signal.aborted) return;
         setAttempts(history);
-        setSelectedId((current) => history.some((item) => item.id === current) ? current : history[0]?.id || "");
+        setSelectedId((current) => history.some((item) => item.id === current) ? current : (history.find((item) => running(item.status)) || history.find((item) => item.status === "PASSED" && !item.cleanupPending) || history[0])?.id || "");
       } catch (e) { if (!controller.signal.aborted) setError((e as Error).message); }
       if (!controller.signal.aborted) timer = setTimeout(() => void poll(), 2000);
     }

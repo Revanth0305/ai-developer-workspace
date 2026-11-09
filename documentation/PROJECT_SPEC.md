@@ -4,11 +4,11 @@
 
 Provide a personal local interface for separate development repositories, project-specific instructions, reviewed AI planning, and later controlled edits, verification, Git automation and test deployments.
 
-## Implemented architecture (CP1–4)
+## Implemented architecture (CP1–6)
 
-- Frontend: React, TypeScript, Vite, Jarvis command-center styling and responsive navigation.
+- Frontend: React, TypeScript, Vite, a responsive SVG/CSS holographic Jarvis command center and a hover/tap navigation popover. No permanent side rail or added frontend dependencies.
 - Backend: Spring Boot / Java 21, validation and loopback Host/Origin guards.
-- Storage: file-backed H2/JPA for projects, tasks, activity and separate planning attempts.
+- Storage: file-backed H2/JPA for projects, tasks, activity and separate planning, execution and Git publication records.
 - Source access: bounded read-only listing and previews. Managed folders remain outside the platform repository.
 - Planning: a locally signed-in Codex App Server child process per request, JSON-RPC over stdio, ephemeral threads, structured output and validated relative proposed paths.
 - Codex is opt-in through `WORKSPACE_CODEX_ENABLED=true`; default startup remains disabled.

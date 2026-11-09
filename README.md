@@ -4,7 +4,13 @@ A local React + TypeScript and Spring Boot platform for managing development pro
 
 ## Current version
 
-Phases 1–5 are implemented for the current bounded scope: dashboard, project registration/settings, tasks/history, source previews, reviewed Codex planning and isolated code candidates with dependency-free Node.js 24 checks. Original managed folders stay unchanged. Managed-project Git automation and deployment remain future milestones.
+Phases 1–6 are implemented for the current bounded scope: the holographic Jarvis dashboard, project registration/settings, tasks/history, source previews, reviewed Codex planning, isolated Node.js 24 candidates and separately reviewed personal GitHub publishing. Original managed folders stay unchanged. Deployment remains a later milestone.
+
+## Holographic command center
+
+The overview uses an animated SVG Jarvis assistant, cyan/violet glass panels, project pulse, recent instruction focus and a command bar. The navigation stays hidden: hover over the menu or left edge on desktop, or tap the menu button on mobile. It overlays the page without reserving width, and dismisses on pointer leave, outside click, Escape or a navigation choice.
+
+Choose a project and enter an instruction; Enter saves a draft and Shift+Enter adds a line. Ctrl+K (Command+K on macOS) returns to the command bar. Plan/review starters fill the input, Continue reopens the latest saved instruction, and Build/Test/Git open the existing reviewed workflow. Existing source previews, settings, history and publication records remain available below the hero or through navigation. Counts come from saved workspace records. Motion respects the operating system's reduced-motion preference.
 
 ## Prerequisites
 

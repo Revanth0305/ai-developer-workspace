@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import "./App.css";
 import ExecutionPanel from "./ExecutionPanel";
+import HolographicOverview, { HoloIcon } from "./HolographicOverview";
 
 type Project = {
   id: string;
@@ -149,9 +150,13 @@ function App() {
   const [instruction, setInstruction] = useState("");
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const [activeTask, setActiveTaskState] = useState<Task | null>(null);
   const [taskPane, setTaskPane] = useState<"plan" | "execution">("plan");
-  useEffect(() => { setTaskPane("plan"); }, [activeTask?.id]);
+  function setActiveTask(task: Task | null, pane: "plan" | "execution" = "plan") {
+    setTaskPane(pane);
+    setActiveTaskState(task);
+  }
   const [refreshKey, setRefreshKey] = useState(0);
   const requestId = useRef(0);
   useEffect(() => {
@@ -212,6 +217,25 @@ function App() {
       return () => window.clearTimeout(timeout);
     }
   }, [notice]);
+  useEffect(() => {
+    const shortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k" && !document.querySelector("dialog[open]")) {
+        event.preventDefault();
+        window.location.hash = "overview";
+        window.setTimeout(() => document.getElementById("jarvis-command")?.focus(), 0);
+      }
+    };
+    window.addEventListener("keydown", shortcut);
+    return () => window.removeEventListener("keydown", shortcut);
+  }, []);
+  function openWorkflow() {
+    const task = projectTasks.find(task => task.status === "PLANNED") || projectTasks.find(task => task.status !== "CANCELLED");
+    if (task) setActiveTask(task, task.status === "PLANNED" ? "execution" : "plan");
+    else {
+      setNotice("Save an instruction and review a plan to prepare code changes and checks.");
+      document.getElementById("jarvis-command")?.focus();
+    }
+  }
   async function saveTask(event: FormEvent) {
     event.preventDefault();
     if (!selected || saving) return;
@@ -275,8 +299,12 @@ function App() {
     ) || [];
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <div className="app-shell holographic-shell">
+      <div className="navigation-edge" aria-hidden="true" onPointerEnter={event => { if (event.pointerType === "mouse") document.getElementById("workspace-navigation")?.showPopover(); }} />
+      <aside className="sidebar" id="workspace-navigation" popover="auto" aria-label="Workspace navigation"
+        onToggle={event => setNavigationOpen((event.nativeEvent as ToggleEvent).newState === "open")}
+        onPointerLeave={event => { if (event.pointerType === "mouse") event.currentTarget.hidePopover(); }}>
+        <button type="button" className="navigation-close icon-button" popoverTarget="workspace-navigation" popoverTargetAction="hide" aria-label="Close navigation"><Icon name="close" size={19} /></button>
         <a className="brand" href="#overview" aria-label="Jarvis workspace overview">
           <span className="brand-mark">
             <Icon name="code" size={25} />
@@ -294,13 +322,14 @@ function App() {
           <span className="tiny-dot" />
         </div>
         <p className="nav-label">WORKSPACE</p>
-        <nav aria-label="Main navigation">
+        <nav aria-label="Main navigation" onClick={() => document.getElementById("workspace-navigation")?.hidePopover()}>
           {nav.map((item) => (
             <a
               key={item.id}
               href={`#${item.id}`}
               className={view === item.id ? "nav-item active" : "nav-item"}
               aria-label={item.label}
+              title={item.label}
               aria-current={view === item.id ? "page" : undefined}
             >
               <Icon name={item.icon} />
@@ -349,12 +378,17 @@ function App() {
             </div>
           </div>
           <span className="version">
-            CONTROLLED BUILD <span>v0.4</span>
+            HOLOGRAPHIC BUILD <span>v0.5</span>
           </span>
         </div>
       </aside>
       <div className="main-shell">
         <header className="topbar">
+          <button type="button" className="navigation-trigger" aria-label="Open navigation" aria-expanded={navigationOpen} aria-controls="workspace-navigation" popoverTarget="workspace-navigation"
+            onPointerEnter={event => { if (event.pointerType === "mouse" && window.matchMedia("(min-width: 601px) and (hover: hover)").matches) document.getElementById("workspace-navigation")?.showPopover(); }}>
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h12M4 18h16" /></svg>
+          </button>
+          <a className="header-brand" href="#overview" aria-label="Jarvis home"><span className="brand-mark"><HoloIcon name="spark" size={22} /></span><span>JARVIS<small>AI Development Assistant</small></span></a>
           <div className="breadcrumbs">
             Workspace <span>/</span>{" "}
             <strong>{nav.find((item) => item.id === view)?.label}</strong>
@@ -378,16 +412,16 @@ function App() {
             >
               <Icon name="refresh" size={18} />
             </button>
-            <span className="user-avatar" title="Local workspace user">
-              L
+            <span className="user-avatar" title="Revanth · local workspace">
+              R
             </span>
           </div>
         </header>
-        <main>
-          <div className="page-heading">
+        <main className={view === "overview" ? "overview-main" : undefined}>
+          {view !== "overview" && <div className="page-heading">
             <div>
               <p className="eyebrow">YOUR COMMAND CENTER</p>
-              <h1>{titles[view]}{view === "overview" && <span className="heading-subline">What’s your next move?</span>}</h1>
+              <h1>{titles[view]}</h1>
               <p className="page-description">{descriptions[view]}</p>
             </div>
             <button
@@ -397,7 +431,7 @@ function App() {
               <Icon name="plus" size={18} />
               Add project
             </button>
-          </div>
+          </div>}
           {error && (
             <div className="alert error" role="alert">
               <div>
@@ -425,36 +459,17 @@ function App() {
             <>
               {view === "overview" && (
                 <>
-                  <section className="stats" aria-label="Workspace totals">
-                    <Stat
-                      icon="folder"
-                      label="Connected projects"
-                      value={snapshot?.projects.length || 0}
-                      detail="Separate folders & settings"
-                    />
-                    <Stat
-                      icon="file"
-                      label="Draft instructions"
-                      value={
-                        snapshot?.tasks.filter(
-                          (task) => task.status === "DRAFT",
-                        ).length || 0
-                      }
-                      detail="Saved and ready for planning"
-                    />
-                    <Stat
-                      icon="clock"
-                      label="Recorded tasks"
-                      value={snapshot?.tasks.length || 0}
-                      detail="Persistent task history"
-                    />
-                    <Stat
-                      icon="shield"
-                      label="Execution mode"
-                      value={runnerReady ? "Isolated tests" : "Read only"}
-                      detail={aiConnection?.authenticated ? "Codex planning connected" : "Codex planning not connected"}
-                    />
-                  </section>
+                  <HolographicOverview
+                    projects={snapshot?.projects || []} tasks={snapshot?.tasks || []}
+                    selectedId={selectedId} instruction={instruction} saving={saving}
+                    connected={!!aiConnection?.authenticated} runnerReady={runnerReady}
+                    onProject={setSelectedId} onInstruction={setInstruction}
+                    onSubmit={event => void saveTask(event)} onAdd={() => setNewProject(true)}
+                    onContinue={() => { const task = projectTasks.find(task => task.status !== "CANCELLED") || projectTasks[0]; if (task) setActiveTask(task); }}
+                    onTask={id => { const task = snapshot?.tasks.find(task => task.id === id); if (task) setActiveTask(task); }}
+                    onWorkflow={() => openWorkflow()}
+                  />
+                  <div className="workspace-detail-heading"><h2>Your workspace, in detail</h2><span>Connected to your local projects</span></div>
                   <div className="work-grid">
                     <div className="work-main">
                       <section className="panel project-panel">
@@ -511,75 +526,6 @@ function App() {
                             </button>
                           </Empty>
                         )}
-                      </section>
-                      <section className="panel instruction-panel">
-                        <div className="panel-heading">
-                          <div>
-                            <h2>Command workspace</h2>
-                            <p>
-                              Give the selected project a clear, focused
-                              instruction.
-                            </p>
-                          </div>
-                          <span className="icon-tile">
-                            <Icon name="spark" />
-                          </span>
-                        </div>
-                        <div className="prompt-starters" aria-label="Instruction starters">
-                          {[
-                            ["Plan a feature", "Plan a new feature: "],
-                            ["Review code", "Review the project for "],
-                            ["Investigate a bug", "Investigate this issue: "],
-                          ].map(([label, prompt]) => (
-                            <button key={label} type="button" disabled={!selected || saving}
-                              onClick={() => { setInstruction(prompt); document.getElementById("instruction")?.focus(); }}>
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                        <form onSubmit={(event) => void saveTask(event)}>
-                          <label className="sr-only" htmlFor="instruction">
-                            Task instruction
-                          </label>
-                          <textarea
-                            id="instruction"
-                            value={instruction}
-                            onChange={(event) =>
-                              setInstruction(event.target.value)
-                            }
-                            disabled={!selected || saving}
-                            required
-                            maxLength={12000}
-                            rows={5}
-                            placeholder="For example: Add a vehicle registration form with required-field validation and connect it to the existing API."
-                          />
-                          <div className="instruction-footer">
-                            <span>
-                              <Icon name="shield" size={14} />
-                              Saved locally · no AI request yet
-                            </span>
-                            <button
-                              className="button primary"
-                              disabled={
-                                !selected || !instruction.trim() || saving
-                              }
-                              type="submit"
-                            >
-                              {saving ? "Saving…" : "Save draft"}
-                              <Icon name="arrow" size={17} />
-                            </button>
-                          </div>
-                        </form>
-                        <div className="inline-note">
-                          <Icon name="spark" size={17} />
-                          <p>
-                            <strong>
-                              Review first. Plan second.
-                            </strong>{" "}
-                            Save a draft, then open it to choose source files and review
-                            the exact context sent to Codex. Planning never edits your project.
-                          </p>
-                        </div>
                       </section>
                       {selected && (
                         <SourceBrowser
@@ -816,7 +762,8 @@ function App() {
                       ["Git & source inspection", "Read only"],
                       ["AI provider", aiConnection?.authenticated ? "Codex · connected" : "Codex · not connected"],
                       ["Code execution", runnerReady ? "Isolated Node.js 24 tests" : "Runner not connected"],
-                      ["Push & deployment", "Not enabled"],
+                      ["Private commits & GitHub", "Reviewed · opt-in"],
+                      ["Deployment", "Not enabled"],
                     ].map(([label, value], index) => (
                       <div key={label} className="capability">
                         <span>{label}</span>
@@ -830,7 +777,7 @@ function App() {
                     <p className="settings-note">
                       The service listens on your computer's loopback address.
                       Codex uses your local sign-in. Review each request before sending
-                      it. Containerized checks require a connected runner. Push and deployment are separate milestones.
+                      it. Containerized checks require a connected runner. Git publishing requires a separate reviewed commit and confirmed destination. Deployment remains a later milestone.
                     </p>
                   </section>
                 </div>
@@ -1055,28 +1002,6 @@ function PlanningPanel({ task, project, onUpdate }: {
   </section>;
 }
 
-function Stat({
-  icon,
-  label,
-  value,
-  detail,
-}: {
-  icon: string;
-  label: string;
-  value: string | number;
-  detail: string;
-}) {
-  return (
-    <div className="stat panel">
-      <div className="stat-top">
-        <span>{label}</span>
-        <Icon name={icon} size={19} />
-      </div>
-      <strong>{value}</strong>
-      <small>{detail}</small>
-    </div>
-  );
-}
 function Empty({
   icon,
   title,
