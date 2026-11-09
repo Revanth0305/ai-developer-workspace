@@ -9,7 +9,7 @@ Updated: 2026-11-09 (Asia/Calcutta)
 | CP3: Project management | Complete for read-only scope | Two-project isolation API test; canonical folder checks; overlap/platform/traversal rejection; scoped Git inspection |
 | CP4: AI planning | Complete; user authorized CP5 | Reviewed context → live signed-in Codex → validated, stored project plan. 27 tests pass, including installed-binary compatibility. Live cancellation verified. |
 | CP5: Code execution | Complete for controlled Node.js 24 candidate scope; awaiting user review | 47 tests passed, including real Docker isolation; live failed check → reviewed repair → 2 passing tests, downloaded patch and cancellation; original source unchanged |
-| CP6: Managed-project Git automation | In progress; user authorized 2026-11-09 | Private branch commit and separately reviewed GitHub push implemented; tests and live verification underway |
+| CP6: Managed-project Git automation | Complete for reviewed personal GitHub profile; awaiting user review | Final transport-fix build: 53 tests pass, zero failures/errors/skips. Real commit and GitHub push verified; original source unchanged |
 | CP7: Deployment | Not started | Local application only; no hosting target configured |
 | CP8: Autonomous workflow | Not started | Requires earlier execution and recovery milestones |
 
@@ -32,13 +32,13 @@ Updated: 2026-11-09 (Asia/Calcutta)
 
 - Project creation means registration of an existing folder. Managed application scaffolding is a later capability.
 - Source inspection is read-only and bounded; filename exclusions are not a complete secret scanner.
-- AI planning is read-only and opt-in. No managed-project editing, command runner, automatic retries, Git commit/push or deployment is available.
+- Planning is read-only. Candidate checks and private Git commits/pushes are separate opt-in reviewed operations. Original-folder editing, arbitrary command execution and deployment remain unavailable.
 - This local prototype is not configured for remote access or multiple users.
-- Database migrations and background execution-attempt records are deferred until the next applicable milestone.
+- Attempts and publications persist in H2. Versioned migrations remain deferred for broader upgrades.
 
 ## Next requirement
 
-The user authorized CP6 on 2026-11-09. Complete its validation, report and stop before CP7. Stop work when remaining Codex usage quota reaches 10%. The platform repository remains Revanth0305/ai-developer-workspace. The user separately authorized public Revanth0305/ai-workspace-cp6-verification for the disposable managed-project verification, and restored GitHub CLI device sign-in. Do not infer new managed-project destinations from either repository. The restart handoff below is historical and resolved.
+CP6 final verification is complete. Report and stop before CP7. The user requested the holographic Jarvis UI next, after finishing this checkpoint. Stop work when remaining Codex usage quota reaches 10%. The platform repository remains Revanth0305/ai-developer-workspace. The user separately authorized public Revanth0305/ai-workspace-cp6-verification for the disposable managed-project verification, and restored GitHub CLI device sign-in. Do not infer new managed-project destinations from either repository. The restart handoff below is historical and resolved.
 
 
 ## Destination review and Jarvis UI — 2026-11-08
@@ -103,3 +103,9 @@ The user authorized CP6 on 2026-11-09. Complete its validation, report and stop 
 - Live Windows transport initially failed because Java/Git split a double-quoted helper path containing spaces. The application retained PUSH_UNKNOWN, including across restart. A credential-safe Java dry run reproduced the failure and verified shell single quoting. After correction, explicit browser reconciliation/push reached PUSHED with the real GitHub commit link. No false push success was reported.
 - Mobile document width remained 390 at a 390px viewport. Browser proof is ignored .runtime/cp6-pushed.png. Final transport-fix full build was started; inspect its latest test XML/report before declaring CP6 fully complete. The journey remains 5/8 until that final confirmation is saved. Stop before CP7, and stop at the user's 10% quota threshold. Last checked quota: 11% primary, 71% secondary.
 - Limits: existing personal GitHub HTTPS repositories, 50 MB reachable history, one bound destination per committed candidate. Push includes original repository history; the UI explicitly requires reviewing history and visibility. Repository creation, original-folder application/merge, organizations/GitLab and deployment remain outside this initial profile. Local publication artifacts/data/credentials do not synchronize through Git.
+
+## CP6 final confirmation - 2026-11-09
+
+- Resumed after primary quota reset (100% primary / 71% secondary). The final transport-fix run passed all **53 tests, zero failures/errors/skips**, including installed Codex and real Docker compatibility. Reports completed after the credential-helper correction; no backend changes or repeated tests were needed.
+- GitHub independently reconfirmed branch codex/task-7eff31ec-47eb581f at **7ce3f8c4e3efa3fa30d43edda70ee8c4ec5c3213**. The retained verification database reports PUSHED with that exact commit and branch. Platform Git state was clean and synchronized before finalizing.
+- This confirmation supersedes the paused final-build notes above. Dashboard journey updated to **6/8**, with deployment awaiting user review. The holographic UI redesign is pending. No CP7 work was started.

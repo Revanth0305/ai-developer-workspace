@@ -594,7 +594,7 @@ function App() {
                       <section className="panel">
                         <div className="panel-heading">
                           <h2>Development journey</h2>
-                          <span className="badge neutral">5 / 8</span>
+                          <span className="badge neutral">6 / 8</span>
                         </div>
                         <ol className="journey">
                           {[
@@ -610,11 +610,11 @@ function App() {
                             <li
                               key={label}
                               className={
-                                index < 5 ? "done" : index === 5 ? "next" : ""
+                                index < 6 ? "done" : index === 6 ? "next" : ""
                               }
                             >
                               <span className="journey-step">
-                                {index < 5 ? (
+                                {index < 6 ? (
                                   <Icon name="check" size={13} />
                                 ) : (
                                   index + 1
@@ -622,11 +622,11 @@ function App() {
                               </span>
                               <span>
                                 {label}
-                                {index === 5 && (
+                                {index === 6 && (
                                   <small>Awaiting your milestone review</small>
                                 )}
                               </span>
-                              {index === 5 && (
+                              {index === 6 && (
                                 <span className="next-label">NEXT</span>
                               )}
                             </li>

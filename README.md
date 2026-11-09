@@ -111,7 +111,7 @@ This optional test uses a synthetic local provider, verifies that the model rece
 
 Tested App Server: `0.167.0-alpha.3.2`. Revalidate compatibility after CLI updates. See [official App Server documentation](https://learn.chatgpt.com/docs/app-server) and [current specification](documentation/PROJECT_SPEC.md).
 
-CP6 is in verification. Wait for user review before CP7 deployment.
+CP6 is complete for the reviewed personal GitHub profile. Wait for user review before CP7 deployment.
 
 
 ## CP5 controlled candidates and checks
